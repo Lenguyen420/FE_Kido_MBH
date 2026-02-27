@@ -76,10 +76,12 @@ const Header = () => {
   const [selectedGrade, setSelectedGrade] = useState("Lớp 1");
   /* ====== Helpers ====== */
   const generalData = examData["Giáo dục phổ thông"];
-  const subjects = generalData[selectedGrade];
+  const subjects = generalData?.[selectedGrade];
   const megaRef = useRef();
   const generalRef = useRef();
   const languageRef = useRef();
+
+
   //ngoại ngữ 
   const [showLanguageMega, setShowLanguageMega] = useState(false);
   const [pinnedLanguage, setPinnedLanguage] = useState(false);
@@ -89,7 +91,7 @@ const Header = () => {
   const [selectedEnglishGrade, setSelectedEnglishGrade] = useState("Tiếng Anh - Khối 1");
 
   const englishData = examData["Ngoại ngữ"]["Tiếng Anh"];
-  const englishSubjects = englishData[selectedEnglishGrade];
+  const englishSubjects = englishData?.[selectedEnglishGrade];
 
   // đăng nhập 
   const [user, setUser] = useState(localStorage.getItem("user"));
@@ -102,6 +104,9 @@ const Header = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef();
   const userId = localStorage.getItem("userId");
+
+
+
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -117,9 +122,8 @@ const Header = () => {
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-
   useEffect(() => {
-    const handleClickOutside = (event) => {
+    const handleClickOutsideGeneral = (event) => {
       if (
         generalRef.current &&
         !generalRef.current.contains(event.target)
@@ -127,8 +131,20 @@ const Header = () => {
         setPinned(false);
         setShowMega(false);
       }
+    };
 
+    // ⚠️ dùng click, không dùng mousedown
+    document.addEventListener("click", handleClickOutsideGeneral);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutsideGeneral);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutsideLanguage = (event) => {
       if (
+        showLanguageMega &&                 // chỉ khi đang mở
         languageRef.current &&
         !languageRef.current.contains(event.target)
       ) {
@@ -137,30 +153,32 @@ const Header = () => {
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    document.addEventListener("click", handleClickOutsideLanguage);
 
+    return () => {
+      document.removeEventListener("click", handleClickOutsideLanguage);
+    };
+  }, [showLanguageMega]);
 
   return (
     <header className="bg-green-700 text-white relative">
-      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      {/* {/* <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between"> */}
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center ">
 
         {/* LOGO */}
-        <Link to="/">
+        <div className="w-10 h-10 md:w-14 md:h-14 rounded-full overflow-hidden shrink-0">
           <img
             src={logo}
             alt="logo"
-            className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
+            className="w-full h-full object-cover"
           />
-        </Link>
+        </div>
 
-        {/* MENU */}
-        <nav className="flex items-center gap-6">
-
+        {/* MENU CENTER */}
+        <nav className="flex-1 flex justify-center items-center gap-6 md:gap-8 pl-3">
           {/* THI */}
           <div
+            ref={generalRef}
             onClick={() => {
               setActiveMenu("exam");
               setShowExamMenu(!showExamMenu);
@@ -182,14 +200,14 @@ const Header = () => {
               setActiveMenu("profile");
               setShowExamMenu(false);
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition
+            className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg transition whitespace-nowrap
             ${activeMenu === "profile"
                 ? "bg-white text-green-700"
                 : "hover:bg-green-600"
               }`}
           >
             <User size={18} />
-            Cá nhân
+            <span className="whitespace-nowrap">Cá nhân</span>
           </NavLink>
         </nav>
 
@@ -198,15 +216,19 @@ const Header = () => {
           {user ? (
             <div
               ref={userMenuRef}
-              className="flex items-center gap-3 text-white font-semibold whitespace-nowrap"
+              className="flex items-center gap-3 text-white font-semibold"
             >
-              <span>Xin chào! {user}</span>
+              {/* Text chỉ hiện từ md trở lên */}
+              <span className="hidden md:inline whitespace-nowrap">
+                Xin chào! {user}
+              </span>
 
+              {/* Icon luôn hiển thị */}
               <img
                 src={menuBar}
                 alt="menu"
                 onClick={() => setShowUserMenu(!showUserMenu)}
-                className="w-6 h-6 cursor-pointer flex-shrink-0"
+                className="w-7 h-7 cursor-pointer flex-shrink-0"
               />
 
               {/* ===== DROPDOWN ===== */}
@@ -256,7 +278,15 @@ const Header = () => {
           ) : (
             <Link
               to="/login"
-              className="bg-white text-green-700 px-4 py-2 rounded-lg font-semibold"
+              className="
+bg-white text-green-700 
+px-3 md:px-4 
+py-1.5 md:py-2 
+text-sm md:text-base 
+rounded-lg 
+font-medium 
+whitespace-nowrap
+"
             >
               Đăng nhập
             </Link>
@@ -265,23 +295,31 @@ const Header = () => {
       </div>
 
       {/* ================= SUB HEADER ================= */}
+      {/* {showExamMenu && ( */}
       {showExamMenu && (
         <div className="w-full bg-gray-200 text-gray-700 shadow-sm relative">
-          <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-center gap-16 text-sm font-semibold">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 flex items-center justify-center gap-8 md:gap-16 text-xs md:text-sm font-semibold whitespace-nowrap">
 
-            {/* GIÁO DỤC PHỔ THÔNG */}
+            {/* ================= GIÁO DỤC PHỔ THÔNG ================= */}
             <div
               className="relative"
               onMouseEnter={() => !pinned && setShowMega(true)}
               onMouseLeave={() => !pinned && setShowMega(false)}
             >
               <div
-                onClick={() => {
-                  setPinned(!pinned);
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  setPinned((prev) => !prev);   // chuẩn React
                   setShowMega(true);
+
+                  setPinnedLanguage(false);
+                  setShowLanguageMega(false);
+
+                  setSelectedGrade(null);
                 }}
                 className={`flex items-center gap-2 cursor-pointer transition
-  ${showMega || pinned
+      ${showMega || pinned
                     ? "text-yellow-600"
                     : "hover:text-yellow-600"
                   }`}
@@ -290,20 +328,32 @@ const Header = () => {
                 <ChevronDown size={16} />
               </div>
 
-              {/* ===== MEGA MENU ===== */}
               {(showMega || pinned) && (
-                <div ref={generalRef} className="absolute left-1/2 -translate-x-1/2 top-10 w-[1000px] bg-white rounded-xl shadow-2xl p-6 z-50">
+                <div
+                  ref={generalRef}
+                  onClick={(e) => e.stopPropagation()}
+                  className="
+        fixed md:absolute
+        top-[120px] md:top-10
+        left-1/2 -translate-x-1/2
+        w-[95%] md:w-screen
+        max-w-[1200px]
+        bg-white rounded-2xl shadow-2xl
+        p-4 md:p-8
+        z-50
+        transition-all duration-300
+      "
+                >
 
-                  <div className="flex">
-
-                    {/* LEFT - GRADES */}
-                    <div className="w-48 border-r pr-4">
+                  {/* DESKTOP */}
+                  <div className="hidden md:flex">
+                    <div className="md:w-80 border-r pr-8">
                       {Object.keys(generalData).map((grade) => (
                         <div
                           key={grade}
                           onClick={() => setSelectedGrade(grade)}
                           className={`px-4 py-2 rounded-lg cursor-pointer mb-1 transition
-        ${selectedGrade === grade
+                ${selectedGrade === grade
                               ? "bg-yellow-500 text-white"
                               : "hover:bg-gray-100"
                             }`}
@@ -313,16 +363,19 @@ const Header = () => {
                       ))}
                     </div>
 
-                    {/* RIGHT - SUBJECTS */}
-                    <div className="flex-1 grid grid-cols-2 gap-8 pl-6">
-                      {Object.keys(subjects).map((subject) => (
+                    <div className="flex-1 grid grid-cols-2 gap-8 pl-8 text-sm">
+                      {Object.keys(
+                        generalData[selectedGrade || Object.keys(generalData)[0]]
+                      ).map((subject) => (
                         <div key={subject}>
-                          <div className="bg-gray-200 px-3 py-2 rounded-md font-semibold mb-3">
+                          <div className="bg-gray-100 px-4 py-2 rounded-lg font-semibold mb-4 border">
                             {subject}
                           </div>
 
-                          <ul className="space-y-2 text-sm text-gray-600">
-                            {subjects[subject].map((item, i) => (
+                          <ul className="space-y-2 text-gray-600">
+                            {generalData[
+                              selectedGrade || Object.keys(generalData)[0]
+                            ][subject].map((item, i) => (
                               <li
                                 key={i}
                                 className="hover:text-green-600 cursor-pointer"
@@ -334,54 +387,121 @@ const Header = () => {
                         </div>
                       ))}
                     </div>
+                  </div>
+
+                  {/* MOBILE */}
+                  <div className="md:hidden h-full max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
+
+                    {!selectedGrade && (
+                      <div className="space-y-3 pb-10">
+                        {Object.keys(generalData).map((grade) => (
+                          <div
+                            key={grade}
+                            onClick={() => setSelectedGrade(grade)}
+                            className="px-4 py-3 bg-gray-100 rounded-lg cursor-pointer 
+                     hover:bg-yellow-500 hover:text-white transition"
+                          >
+                            {grade}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {selectedGrade && subjects && (
+                      <div className="pb-10">
+
+                        <div
+                          onClick={() => setSelectedGrade(null)}
+                          className="mb-4 text-sm text-blue-500 cursor-pointer"
+                        >
+                          ← Quay lại
+                        </div>
+
+                        <div className="space-y-6 text-sm">
+                          {Object.keys(subjects).map((subject) => (
+                            <div key={subject}>
+                              <div className="bg-gray-100 px-4 py-2 rounded-lg font-semibold mb-2 border">
+                                {subject}
+                              </div>
+
+                              <ul className="space-y-2 text-gray-600">
+                                {subjects[subject].map((item, i) => (
+                                  <li
+                                    key={i}
+                                    className="hover:text-green-600 cursor-pointer"
+                                  >
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+
+                      </div>
+                    )}
 
                   </div>
                 </div>
               )}
             </div>
 
-            {/* NGOẠI NGỮ */}
+            {/* ================= NGOẠI NGỮ ================= */}
             <div
               className="relative"
               onMouseEnter={() => !pinnedLanguage && setShowLanguageMega(true)}
               onMouseLeave={() => !pinnedLanguage && setShowLanguageMega(false)}
             >
               <div
-                onClick={() => {
-                  setPinnedLanguage(!pinnedLanguage);
+
+                onClick={(e) => {
+                  e.stopPropagation();
+
+                  setPinnedLanguage((prev) => !prev);   // toggle chuẩn
                   setShowLanguageMega(true);
+
+                  // đóng phổ thông
+                  setPinned(false);
+                  setShowMega(false);
+
+                  setSelectedEnglishGrade(null);
                 }}
-                className={`flex items-center gap-2 cursor-pointer transition font-semibold
-    ${showLanguageMega || pinnedLanguage
+                className={`flex items-center gap-2 cursor-pointer transition
+            ${showLanguageMega || pinnedLanguage
                     ? "text-yellow-600"
                     : "hover:text-yellow-600"
                   }`}
               >
                 NGOẠI NGỮ
-                <ChevronDown
-                  size={16}
-                  className={`${showLanguageMega || pinnedLanguage
-                    ? "text-yellow-600"
-                    : ""
-                    }`}
-                />
+                <ChevronDown size={16} />
               </div>
 
               {(showLanguageMega || pinnedLanguage) && (
                 <div
                   ref={languageRef}
-                  className="absolute left-1/2 -translate-x-1/2 top-10 w-[1000px] bg-white rounded-xl shadow-2xl p-6 z-50"
+                  onClick={(e) => e.stopPropagation()}
+                  className="
+              fixed md:absolute
+              top-[120px] md:top-10
+              left-1/2 -translate-x-1/2
+              w-[95%] md:w-screen
+              max-w-[1000px]
+              bg-white rounded-2xl shadow-2xl
+              p-4 md:p-8
+              z-50
+              transition-all duration-300
+            "
                 >
-                  <div className="flex">
 
-                    {/* LEFT - CHỌN KHỐI */}
-                    <div className="w-56 border-r pr-4">
+                  {/* DESKTOP */}
+                  <div className="hidden md:flex">
+                    <div className="md:w-80 border-r pr-8">
                       {Object.keys(englishData).map((grade) => (
                         <div
                           key={grade}
                           onClick={() => setSelectedEnglishGrade(grade)}
                           className={`px-4 py-2 rounded-lg cursor-pointer mb-1 transition
-              ${selectedEnglishGrade === grade
+          ${selectedEnglishGrade === grade
                               ? "bg-yellow-500 text-white"
                               : "hover:bg-gray-100"
                             }`}
@@ -391,27 +511,55 @@ const Header = () => {
                       ))}
                     </div>
 
-                    {/* RIGHT - DANH SÁCH ĐỀ */}
-                    <div className="flex-1 pl-6">
-
-                      <div className="bg-gray-200 px-3 py-2 rounded-md font-semibold mb-4">
-                        {selectedEnglishGrade}
-                      </div>
-
-                      <ul className="space-y-3 text-sm text-gray-600">
-                        {englishSubjects.map((item, i) => (
-                          <li
-                            key={i}
-                            className="hover:text-green-600 cursor-pointer"
-                          >
+                    <div className="flex-1 pl-8 text-sm">
+                      <ul className="grid grid-cols-2 gap-4 text-gray-600">
+                        {(englishData[selectedEnglishGrade || Object.keys(englishData)[0]] || []).map((item, i) => (
+                          <li key={i} className="hover:text-green-600 cursor-pointer">
                             {item}
                           </li>
                         ))}
                       </ul>
-
                     </div>
+                  </div>
+
+                  {/* MOBILE */}
+                  <div className="md:hidden">
+
+                    {!selectedEnglishGrade && (
+                      <div className="space-y-3">
+                        {Object.keys(englishData).map((grade) => (
+                          <div
+                            key={grade}
+                            onClick={() => setSelectedEnglishGrade(grade)}
+                            className="px-4 py-3 bg-gray-100 rounded-lg cursor-pointer hover:bg-yellow-500 hover:text-white transition"
+                          >
+                            {grade}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {selectedEnglishGrade && (
+                      <div>
+                        <div
+                          onClick={() => setSelectedEnglishGrade(null)}
+                          className="mb-4 text-sm text-blue-500 cursor-pointer"
+                        >
+                          ← Quay lại
+                        </div>
+
+                        <ul className="space-y-3 text-sm text-gray-600">
+                          {englishSubjects.map((item, i) => (
+                            <li key={i} className="hover:text-green-600 cursor-pointer">
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
 
                   </div>
+
                 </div>
               )}
             </div>

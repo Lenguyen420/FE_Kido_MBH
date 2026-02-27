@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/kido.jpg";
 import toast from "react-hot-toast";
-
+import cancelIcon from "../assets/cancle.png";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -44,7 +44,7 @@ const Login = () => {
       <div className="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2">
 
         {/* LEFT SIDE - LOGO */}
-        <div className="flex flex-col items-center justify-center bg-green-700 text-white p-10">
+        <div className="hidden md:flex flex-col items-center justify-center bg-green-700 text-white p-10">
 
           <img
             src={logo}
@@ -61,7 +61,15 @@ const Login = () => {
         {/* RIGHT SIDE - FORM */}
         <div className="flex items-center justify-center p-10">
 
-          <div className="w-full max-w-md">
+          <div className="w-full max-w-md relative">
+          {/* Cancel Button */}
+          <img
+            src={cancelIcon}
+            alt="cancel"
+            onClick={() => navigate("/")}
+            className="w-6 h-6 absolute top-0 right-0 cursor-pointer hover:scale-110 transition"
+          />
+
 
             <h2 className="text-2xl font-bold text-green-700 mb-8 text-center">
               Đăng nhập
