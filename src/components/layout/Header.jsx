@@ -185,7 +185,7 @@ const Header = () => {
               setActiveMenu("exam");
               setShowExamMenu(!showExamMenu);
             }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition font-semibold
             ${activeMenu === "exam"
                 ? "bg-white text-green-700"
                 : "hover:bg-green-600"
@@ -202,7 +202,7 @@ const Header = () => {
               setActiveMenu("profile");
               setShowExamMenu(false);
             }}
-            className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg transition whitespace-nowrap
+            className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg transition whitespace-nowrap font-semibold
             ${activeMenu === "profile"
                 ? "bg-white text-green-700"
                 : "hover:bg-green-600"

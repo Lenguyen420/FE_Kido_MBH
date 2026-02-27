@@ -15,15 +15,7 @@ const ExamDetail = () => {
   }, [id]);
 
   const handleMockTest = () => {
-    const newResult = {
-      date: new Date().toLocaleDateString(),
-      score: Math.floor(Math.random() * 11),
-      time: Math.floor(Math.random() * 5 + 1) + " phút",
-    };
-
-    const updated = [...history, newResult];
-    localStorage.setItem(`exam_${id}`, JSON.stringify(updated));
-    setHistory(updated);
+    navigate(`/exam-doing/${id}`);
   };
 
   return (
@@ -119,6 +111,7 @@ const ExamDetail = () => {
   hover:bg-green-600 hover:text-white hover:border-green-600
   active:scale-95
   transition-all duration-200 cursor-pointer
+  rounded-full
 "
                           >
                             XEM
@@ -133,91 +126,91 @@ const ExamDetail = () => {
           )}
 
           {/* ================== BẢNG XẾP HẠNG ================== */}
-<div className="mt-12 px-3">
+          <div className="mt-12 px-3">
 
-  <h2 className="text-2xl font-bold mb-6 text-center">
-    BẢNG XẾP HẠNG
-  </h2>
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              BẢNG XẾP HẠNG
+            </h2>
 
-  {/* Container responsive */}
-  <div className="w-full md:w-3/4 lg:w-1/2 mx-auto bg-gray-100 rounded-3xl p-5 sm:p-8">
+            {/* Container responsive */}
+            <div className="w-full md:w-3/4 lg:w-1/2 mx-auto bg-gray-100 rounded-3xl p-5 sm:p-8">
 
-    <h3 className="text-center text-gray-600 mb-8">
-      Top thành viên điểm cao
-    </h3>
+              <h3 className="text-center text-gray-600 mb-8">
+                Top thành viên điểm cao
+              </h3>
 
-    {/* ================= TOP 3 ================= */}
-    {/* ================= TOP 3 ================= */}
-<div className="flex justify-center items-end gap-6 sm:gap-12 mb-10">
+              {/* ================= TOP 3 ================= */}
+              {/* ================= TOP 3 ================= */}
+              <div className="flex justify-center items-end gap-6 sm:gap-12 mb-10">
 
-  {/* HẠNG 2 */}
-  <div className="text-center translate-y-4 sm:translate-y-6">
-    <img
-      src={avatar}
-      alt=""
-      className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover mx-auto"
-    />
-    <p className="mt-2 font-medium text-xs sm:text-base">
-      Huỳnh Thị B...
-    </p>
-    <p className="text-red-600 font-semibold text-sm sm:text-base">
-      10 điểm
-    </p>
-    <p className="text-[10px] sm:text-xs text-gray-500">
-      1 phút 20 giây
-    </p>
-  </div>
+                {/* HẠNG 2 */}
+                <div className="text-center translate-y-4 sm:translate-y-6">
+                  <img
+                    src={avatar}
+                    alt=""
+                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover mx-auto"
+                  />
+                  <p className="mt-2 font-medium text-xs sm:text-base">
+                    Huỳnh Thị B...
+                  </p>
+                  <p className="text-red-600 font-semibold text-sm sm:text-base">
+                    10 điểm
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-gray-500">
+                    1 phút 20 giây
+                  </p>
+                </div>
 
-  {/* HẠNG 1 */}
-  <div className="text-center">
-    <img
-      src={avatar}
-      alt=""
-      className="
+                {/* HẠNG 1 */}
+                <div className="text-center">
+                  <img
+                    src={avatar}
+                    alt=""
+                    className="
         w-14 h-14 sm:w-20 sm:h-20
         rounded-full object-cover
         border-4 border-yellow-400
         mx-auto
       "
-    />
-    <p className="mt-2 font-semibold text-xs sm:text-base">
-      Đặng Thị Vân...
-    </p>
-    <p className="text-red-600 font-semibold text-sm sm:text-base">
-      10 điểm
-    </p>
-    <p className="text-[10px] sm:text-xs text-gray-500">
-      0 phút 42 giây
-    </p>
-  </div>
+                  />
+                  <p className="mt-2 font-semibold text-xs sm:text-base">
+                    Đặng Thị Vân...
+                  </p>
+                  <p className="text-red-600 font-semibold text-sm sm:text-base">
+                    10 điểm
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-gray-500">
+                    0 phút 42 giây
+                  </p>
+                </div>
 
-  {/* HẠNG 3 */}
-  <div className="text-center translate-y-4 sm:translate-y-6">
-    <img
-      src={avatar}
-      alt=""
-      className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover mx-auto"
-    />
-    <p className="mt-2 font-medium text-xs sm:text-base">
-      Phạm Thị Mi...
-    </p>
-    <p className="text-red-600 font-semibold text-sm sm:text-base">
-      10 điểm
-    </p>
-    <p className="text-[10px] sm:text-xs text-gray-500">
-      1 phút 42 giây
-    </p>
-  </div>
+                {/* HẠNG 3 */}
+                <div className="text-center translate-y-4 sm:translate-y-6">
+                  <img
+                    src={avatar}
+                    alt=""
+                    className="w-12 h-12 sm:w-16 sm:h-16 rounded-full object-cover mx-auto"
+                  />
+                  <p className="mt-2 font-medium text-xs sm:text-base">
+                    Phạm Thị Mi...
+                  </p>
+                  <p className="text-red-600 font-semibold text-sm sm:text-base">
+                    10 điểm
+                  </p>
+                  <p className="text-[10px] sm:text-xs text-gray-500">
+                    1 phút 42 giây
+                  </p>
+                </div>
 
-</div>
+              </div>
 
-    {/* ================= DANH SÁCH 4-10 ================= */}
-    <div className="space-y-3">
+              {/* ================= DANH SÁCH 4-10 ================= */}
+              <div className="space-y-3">
 
-      {[4, 5, 6, 7, 8, 9, 10].map((rank) => (
-        <div
-          key={rank}
-          className="
+                {[4, 5, 6, 7, 8, 9, 10].map((rank) => (
+                  <div
+                    key={rank}
+                    className="
             flex 
             items-center 
             justify-between 
@@ -226,10 +219,10 @@ const ExamDetail = () => {
             py-3 sm:py-4 
             rounded-xl
           "
-        >
+                  >
 
-          <div className="flex items-center gap-3 sm:gap-4">
-            <span className="
+                    <div className="flex items-center gap-3 sm:gap-4">
+                      <span className="
               w-8 h-8 
               sm:w-10 sm:h-8 
               rounded-full 
@@ -237,36 +230,36 @@ const ExamDetail = () => {
               flex items-center justify-center 
               text-xs sm:text-sm
             ">
-              {rank}
-            </span>
+                        {rank}
+                      </span>
 
-            <img
-              src={avatar}
-              alt="avatar"
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
-            />
+                      <img
+                        src={avatar}
+                        alt="avatar"
+                        className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover"
+                      />
 
-            <span className="font-medium text-sm sm:text-base">
-              Thành viên {rank}
-            </span>
+                      <span className="font-medium text-sm sm:text-base">
+                        Thành viên {rank}
+                      </span>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-red-600 font-semibold text-sm sm:text-base">
+                        10 điểm
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        2 phút 02 giây
+                      </p>
+                    </div>
+
+                  </div>
+                ))}
+
+              </div>
+
+            </div>
           </div>
-
-          <div className="text-right">
-            <p className="text-red-600 font-semibold text-sm sm:text-base">
-              10 điểm
-            </p>
-            <p className="text-xs text-gray-500">
-              2 phút 02 giây
-            </p>
-          </div>
-
-        </div>
-      ))}
-
-    </div>
-
-  </div>
-</div>
 
         </div>
       </div>

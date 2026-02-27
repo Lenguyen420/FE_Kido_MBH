@@ -5,6 +5,7 @@ import Login from "./pages/Login";
 import Home from "./pages/Home";
 import ExamList from "./pages/ExamList";
 import ExamDetail from "./pages/ExamDetail";
+import ExamDoing from "./pages/ExamDoing";
 import { Toaster } from "react-hot-toast";
 
 
@@ -25,6 +26,7 @@ const App = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/exam-list" element={<ExamList />} />
         <Route path="/exam/:id" element={<ExamDetail />} />
+        <Route path="/exam-doing/:id" element={<ExamDoing />} />
       </Routes>
 
 
