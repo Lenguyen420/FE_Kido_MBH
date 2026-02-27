@@ -167,11 +167,13 @@ const Header = () => {
 
         {/* LOGO */}
         <div className="w-10 h-10 md:w-14 md:h-14 rounded-full overflow-hidden shrink-0">
-          <img
-            src={logo}
-            alt="logo"
-            className="w-full h-full object-cover"
-          />
+          <Link to="/">
+            <img
+              src={logo}
+              alt="logo"
+              className="w-full h-full object-cover cursor-pointer"
+            />
+          </Link>
         </div>
 
         {/* MENU CENTER */}

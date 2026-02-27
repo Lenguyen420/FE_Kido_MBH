@@ -2,6 +2,9 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Header from "./components/layout/Header";
 import Login from "./pages/Login";
+import Home from "./pages/Home";
+import ExamList from "./pages/ExamList";
+import ExamDetail from "./pages/ExamDetail";
 import { Toaster } from "react-hot-toast";
 
 
@@ -14,13 +17,14 @@ const App = () => {
       
       
 
-      <Routes>      
-        <Route path="/" element={<div>Trang chủ</div>} />
-         
-        <Route path="/profile" element={<div>Cá nhân</div>} />   
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/profile" element={<div>Cá nhân</div>} />
         <Route path="/profile-user" element={<div>Thông tin cá nhân</div>} />   
         <Route path="/notifications" element={<div>Thông báo</div>} />   
         <Route path="/login" element={<Login />} />
+        <Route path="/exam-list" element={<ExamList />} />
+        <Route path="/exam/:id" element={<ExamDetail />} />
       </Routes>
 
 
