@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import logo from "../../assets/kido.jpg";
 import menuBar from "../../assets/menu_bar.png";
+import { useNavigate } from "react-router-dom";
 import {
   GraduationCap,
   BookOpen,
@@ -67,7 +68,7 @@ const examData = {
 };
 const Header = () => {
   const location = useLocation();
-
+  const navigate = useNavigate();
   const [showExamMenu, setShowExamMenu] = useState(false);
   const [activeMenu, setActiveMenu] = useState("");
   const [showMega, setShowMega] = useState(false);
@@ -179,14 +180,16 @@ const Header = () => {
         {/* MENU CENTER */}
         <nav className="flex-1 flex justify-center items-center gap-6 md:gap-8 pl-3">
           {/* THI */}
+          {/* THI */}
           <div
             ref={generalRef}
             onClick={() => {
               setActiveMenu("exam");
               setShowExamMenu(!showExamMenu);
+              navigate("/"); // thêm dòng này
             }}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition font-semibold
-            ${activeMenu === "exam"
+  ${activeMenu === "exam"
                 ? "bg-white text-green-700"
                 : "hover:bg-green-600"
               }`}
@@ -197,7 +200,7 @@ const Header = () => {
 
           {/* CÁ NHÂN */}
           <NavLink
-            to="/profile"
+            to="/exam-dashboard"
             onClick={() => {
               setActiveMenu("profile");
               setShowExamMenu(false);

@@ -17,6 +17,15 @@ const ExamDetail = () => {
   const handleMockTest = () => {
     navigate(`/exam-doing/${id}`);
   };
+  const formatDateVN = (dateString) => {
+    const date = new Date(dateString);
+
+    return date.toLocaleDateString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen py-6">
@@ -27,8 +36,8 @@ const ExamDetail = () => {
         <div className="bg-white p-6 rounded-xl">
 
           <button
-            onClick={() => navigate(-1)}
-            className="text-blue-600 text-sm mb-4"
+            onClick={() => navigate("/exam-list")}
+            className="text-blue-600 text-sm mb-4 cursor-pointer "
           >
             ← Quay lại
           </button>
@@ -92,7 +101,9 @@ const ExamDetail = () => {
                       >
                         <td className="px-8 py-3">Lần {index + 1}</td>
 
-                        <td className="px-8 py-3      ">{item.date}</td>
+                        <td className="px-8 py-3">
+                          {formatDateVN(item.date)}
+                        </td>
 
                         <td className="px-8 py-3 font-semibold text-red-600 text-base">
                           {item.score}
@@ -102,6 +113,9 @@ const ExamDetail = () => {
 
                         <td className="px-8 py-3      ">
                           <button
+                            onClick={() =>
+                              navigate(`/exam-doing/${id}?review=${index}`)
+                            }
                             className="
   px-10
   py-3

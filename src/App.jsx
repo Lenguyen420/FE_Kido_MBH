@@ -7,7 +7,8 @@ import ExamList from "./pages/ExamList";
 import ExamDetail from "./pages/ExamDetail";
 import ExamDoing from "./pages/ExamDoing";
 import { Toaster } from "react-hot-toast";
-
+import ExamDashboard from "./pages/ExamDashboard";
+import Profile from "./pages/Profile";
 
 
 const App = () => {
@@ -20,8 +21,8 @@ const App = () => {
 
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/profile" element={<div>Cá nhân</div>} />
-        <Route path="/profile-user" element={<div>Thông tin cá nhân</div>} />   
+        <Route path="/exam-dashboard" element={<ExamDashboard />} />
+        <Route path="/profile-user" element={<Profile />} />
         <Route path="/notifications" element={<div>Thông báo</div>} />   
         <Route path="/login" element={<Login />} />
         <Route path="/exam-list" element={<ExamList />} />
