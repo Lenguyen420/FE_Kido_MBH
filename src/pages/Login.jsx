@@ -1,138 +1,115 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff, User, Lock } from "lucide-react";
 import logo from "../assets/kido.jpg";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import cancelIcon from "../assets/cancle.png";
 
-const Login = () => {
-  const navigate = useNavigate();
+export default function Login() {
+      const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [username, setUsername] = useState("");
+const [password, setPassword] = useState("");
 
-  const [form, setForm] = useState({
-    id: "",
-    password: "",
-  });
-
-  const [error, setError] = useState("");
-
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-
-    // ===== DỮ LIỆU TEST =====
-    const TEST_ID = "test";
-    const TEST_PASSWORD = "123";
-    const USER_NAME = "Nguyen Van A";
-
-    if (form.id === TEST_ID && form.password === TEST_PASSWORD) {
-      localStorage.setItem("user", USER_NAME);
-      localStorage.setItem("userId", TEST_ID);
-      toast.success("Đăng nhập thành công!");
-      navigate("/");
-    } else {
-      toast.error("Sai ID hoặc mật khẩu!");
-    }
-  };
+const handleLogin = () => {
+  if (username === "123" && password === "123") {
+      localStorage.setItem("isLogin", "true");
+    toast.success("Đăng nhập thành công 🎉");
+    navigate("/");
+  } else {
+    toast.error("Sai tài khoản hoặc mật khẩu ❌");
+  }
+};
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center px-6">
-      <div className="w-full max-w-6xl bg-white rounded-3xl shadow-2xl overflow-hidden grid md:grid-cols-2">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      
+      {/* CARD */}
+      <div className="bg-white w-full max-w-md rounded-2xl shadow-md p-6 sm:p-8">
 
-        {/* LEFT SIDE - LOGO */}
-        <div className="hidden md:flex flex-col items-center justify-center bg-green-700 text-white p-10">
-
-          <img
-            src={logo}
-            alt="KIDO Logo"
-            className="w-56 h-56 object-cover rounded-full shadow-xl border-8 border-white mb-6"
-          />
-
-          <h1 className="text-3xl font-bold tracking-wide">
-            KIDO Education
-          </h1>
-
-        </div>
-
-        {/* RIGHT SIDE - FORM */}
-        <div className="flex items-center justify-center p-10">
-
-          <div className="w-full max-w-md relative">
-          {/* Cancel Button */}
-          <img
-            src={cancelIcon}
-            alt="cancel"
-            onClick={() => navigate("/")}
-            className="w-6 h-6 absolute top-0 right-0 cursor-pointer hover:scale-110 transition"
-          />
-
-
-            <h2 className="text-2xl font-bold text-green-700 mb-8 text-center">
-              Đăng nhập
-            </h2>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-
-              {/* ID */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  ID
-                </label>
-                <input
-                  type="text"
-                  name="id"
-                  value={form.id}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600"
-                  placeholder="Nhập ID"
-                />
-              </div>
-
-              {/* Password */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Mật khẩu
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={form.password}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-green-600"
-                  placeholder="Nhập mật khẩu"
-                />
-              </div>
-
-              {/* ERROR MESSAGE */}
-              {error && (
-                <div className="text-red-500 text-sm text-center">
-                  {error}
-                </div>
-              )}
-
-              {/* Button */}
-              <button
-                type="submit"
-                className="w-full bg-green-700 text-white py-3 rounded-xl font-semibold hover:bg-green-800 transition"
-              >
-                Đăng nhập
-              </button>
-
-            </form>
-
+        {/* LOGO TRÒN */}
+        <div className="flex flex-col items-center mb-6">
+          <div className="w-20 h-20 rounded-full overflow-hidden shadow">
+            <img
+              src={logo}
+              alt="kido"
+              className="w-full h-full object-cover"
+            />
           </div>
 
+          <div className="text-lg font-semibold text-gray-800 mt-3">
+            Đăng nhập hệ thống
+          </div>
         </div>
 
+        {/* FORM */}
+        <div className="space-y-5">
+            <form
+  onSubmit={(e) => {
+    e.preventDefault();
+    handleLogin();
+  }}
+  className="space-y-5"
+>
+
+          {/* USERNAME */}
+          <div className="relative">
+            <User
+              size={18}
+              className="absolute left-0 top-2 text-gray-400"
+            />
+            <input
+              type="text"
+              placeholder="Tên đăng nhập hoặc Sđt"
+              className="w-full border-b border-gray-300 focus:outline-none focus:border-blue-500 py-2 pl-7 text-sm"
+                  value={username}
+  onChange={(e) => setUsername(e.target.value)}
+            />
+          </div>
+
+          {/* PASSWORD */}
+          <div className="relative">
+            <Lock
+              size={18}
+              className="absolute left-0 top-2 text-gray-400"
+            />
+
+            <input
+              type={showPassword ? "text" : "password"}
+              placeholder="Mật khẩu"
+              className="w-full border-b border-gray-300 focus:outline-none focus:border-blue-500 py-2 pl-7 pr-10 text-sm"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+
+            <div
+              className="absolute right-0 top-2 cursor-pointer text-gray-500"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </div>
+          </div>
+
+          {/* FORGOT PASSWORD */}
+          <div className="text-right">
+            <span className="text-sm text-blue-600 cursor-pointer hover:underline">
+              Quên mật khẩu?
+            </span>
+          </div>
+
+          {/* BUTTON */}
+          
+  {/* inputs ở đây */}
+
+  <button
+    type="submit"
+    className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition"
+  >
+    Đăng nhập
+  </button>
+</form>
+
+        </div>
       </div>
     </div>
   );
-};
-
-export default Login;
+}

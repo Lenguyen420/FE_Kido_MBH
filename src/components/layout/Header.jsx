@@ -1,579 +1,303 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
-import logo from "../../assets/kido.jpg";
-import menuBar from "../../assets/menu_bar.png";
-import { useNavigate } from "react-router-dom";
-import {
-  GraduationCap,
-  BookOpen,
-  User,
-  ChevronDown,
-} from "lucide-react";
+import React from "react";
 
-/* ================== DATA ================== */
-const defaultSubjects = {
-  "Công dân số": [
-    "Kiểm tra giữa kì 1",
-    "Kiểm tra học kì 1",
-    "Kiểm tra giữa kì 2",
-    "Kiểm tra học kì 2",
-    "Tất cả các đề",
-  ],
-  "Stem": [
-    "Kiểm tra giữa kì 1",
-    "Kiểm tra học kì 1",
-    "Kiểm tra giữa kì 2",
-    "Kiểm tra học kì 2",
-    "Tất cả các đề",
-  ],
-  "Kỹ năng sống": [
-    "Kiểm tra giữa kì 1",
-    "Kiểm tra học kì 1",
-    "Kiểm tra giữa kì 2",
-    "Kiểm tra học kì 2",
-    "Tất cả các đề",
-  ],
-  "ICDL": ["Ôn tập", "Thi thử"],
-};
+import { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 
-// ====== Tạo lớp 1 → 12 (Giáo dục phổ thông) ======
-const grades = {};
-for (let i = 1; i <= 12; i++) {
-  grades[`Lớp ${i}`] = defaultSubjects;
-}
+import { FaBars, FaUserCircle } from "react-icons/fa";
 
-// ====== Tạo Tiếng Anh - Khối 1 → 12 ======
-const defaultEnglishExams = [
-  "Kiểm tra giữa kì 1",
-  "Kiểm tra học kì 1",
-  "Kiểm tra giữa kì 2",
-  "Kiểm tra học kì 2",
-  "Tất cả các đề",
+const menu = [
+  { name: "Tổng quan", path: "/" },
+
+  {
+    name: "Hàng hóa",
+    children: [
+      { name: "Danh mục", path: "/hang-hoa/danh-muc" },
+      { name: "Thiết lập giá", path: "/hang-hoa/gia" },
+      { name: "Kiểm kho", path: "/hang-hoa/kiem-kho" },
+    ],
+  },
+
+  {
+    name: "Phòng/Bàn",
+    children: [
+      { name: "Danh sách phòng bàn", path: "/phong-ban" },
+      { name: "Gọi món qua mã QR", path: "/qr-order" },
+    ],
+  },
+
+  {
+    name: "Giao dịch",
+    children: [
+      { name: "Hóa đơn", path: "/hoa-don" },
+      { name: "Trả hàng", path: "/tra-hang" },
+      { name: "Hóa đơn đầu vào", path: "/hoa-don-dau-vao" },
+      { name: "Nhập hàng", path: "/nhap-hang" },
+      { name: "Trả hàng nhập", path: "/tra-hang-nhap" },
+      { name: "Xuất hủy", path: "/xuat-huy" },
+    ],
+  },
+
+  {
+    name: "Nhân viên",
+    children: [
+      { name: "Danh sách nhân viên", path: "/nhan-vien" },
+      { name: "Lịch làm việc", path: "/lich-lam-viec" },
+      { name: "Bảng chấm công", path: "/cham-cong" },
+      { name: "Bảng lương", path: "/bang-luong" },
+      { name: "Bảng hoa hồng", path: "/hoa-hong" },
+      { name: "Thiết lập nhân viên", path: "/thiet-lap-nv" },
+    ],
+  },
+
+  {
+    name: "Bán Online",
+    children: [
+      { name: "Bán hàng Zalo", path: "/zalo" },
+      { name: "Bán hàng Facebook", path: "/facebook" },
+      { name: "Website bán hàng", path: "/website" },
+    ],
+  },
+
+  { name: "Sổ quỹ", path: "/so-quy" },
+  { name: "Báo cáo", path: "/bao-cao" },
+
+  {
+    name: "Thuế & Kế toán",
+    children: [
+      { name: "Thuế & Kế toán", path: "/thue" },
+      { name: "Hóa đơn điện tử", path: "/hoa-don-dien-tu" },
+    ],
+  },
 ];
 
-const englishGrades = {};
-for (let i = 1; i <= 12; i++) {
-  englishGrades[`Tiếng Anh - Khối ${i}`] = defaultEnglishExams;
-}
-
-const examData = {
-  "Giáo dục phổ thông": grades,
-
-  "Ngoại ngữ": {
-    "Tiếng Anh": englishGrades,
-
-    IELTS: ["Listening", "Reading", "Writing", "Speaking"],
-    TOEIC: ["Part 1", "Part 2", "Part 3", "Part 4"],
-  },
-};
-const Header = () => {
-  const location = useLocation();
+export default function Header() {
   const navigate = useNavigate();
-  const [showExamMenu, setShowExamMenu] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("");
-  const [showMega, setShowMega] = useState(false);
+  const location = useLocation();
 
-  const [pinned, setPinned] = useState(false);      // giữ mở khi click
-  const [selectedGrade, setSelectedGrade] = useState("Lớp 1");
-  /* ====== Helpers ====== */
-  const generalData = examData["Giáo dục phổ thông"];
-  const subjects = generalData?.[selectedGrade];
-  const megaRef = useRef();
-  const generalRef = useRef();
-  const languageRef = useRef();
+  const [openMobile, setOpenMobile] = useState(false);
+  const [openUser, setOpenUser] = useState(false);
 
+  // biến giả lập đăng nhập
+  const isLoggedIn = localStorage.getItem("isLogin") === "true";
 
-  //ngoại ngữ 
-  const [showLanguageMega, setShowLanguageMega] = useState(false);
-  const [pinnedLanguage, setPinnedLanguage] = useState(false);
-  const languageData = examData["Ngoại ngữ"];
-  const firstLanguage = Object.keys(languageData)[0];
-  const certificates = languageData[firstLanguage];
-  const [selectedEnglishGrade, setSelectedEnglishGrade] = useState("Tiếng Anh - Khối 1");
+  const isParentActive = (item) => {
 
-  const englishData = examData["Ngoại ngữ"]["Tiếng Anh"];
-  const englishSubjects = englishData?.[selectedEnglishGrade];
-
-  // đăng nhập 
-  const [user, setUser] = useState(localStorage.getItem("user"));
-
-  useEffect(() => {
-    setUser(localStorage.getItem("user"));
-  }, [location]);
-
-  // popup menu bar
-  const [showUserMenu, setShowUserMenu] = useState(false);
-  const userMenuRef = useRef();
-  const userId = localStorage.getItem("userId");
+    if (item.path === "/") {
+      return location.pathname === "/";
+    }
 
 
+    if (item.path) {
+      return location.pathname.startsWith(item.path);
+    }
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        userMenuRef.current &&
-        !userMenuRef.current.contains(event.target)
-      ) {
-        setShowUserMenu(false);
-      }
-    };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () =>
-      document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    if (item.children) {
+      return item.children.some((sub) =>
+        location.pathname.startsWith(sub.path)
+      );
+    }
 
-  useEffect(() => {
-    const handleClickOutsideGeneral = (event) => {
-      if (
-        generalRef.current &&
-        !generalRef.current.contains(event.target)
-      ) {
-        setPinned(false);
-        setShowMega(false);
-      }
-    };
-
-    // ⚠️ dùng click, không dùng mousedown
-    document.addEventListener("click", handleClickOutsideGeneral);
-
-    return () => {
-      document.removeEventListener("click", handleClickOutsideGeneral);
-    };
-  }, []);
-
-  useEffect(() => {
-    const handleClickOutsideLanguage = (event) => {
-      if (
-        showLanguageMega &&                 // chỉ khi đang mở
-        languageRef.current &&
-        !languageRef.current.contains(event.target)
-      ) {
-        setPinnedLanguage(false);
-        setShowLanguageMega(false);
-      }
-    };
-
-    document.addEventListener("click", handleClickOutsideLanguage);
-
-    return () => {
-      document.removeEventListener("click", handleClickOutsideLanguage);
-    };
-  }, [showLanguageMega]);
-
+    return false;
+  };
   return (
-    <header className="bg-green-700 text-white relative">
-      {/* {/* <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between"> */}
-      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center ">
+    <>
+      {/* ================= HEADER ================= */}
+      <div className="bg-blue-600">
+        <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14 text-white">
+          {/* LEFT */}
+          <div className="flex items-center gap-4">
+            {/* MOBILE BUTTON */}
+            <button
+              className="md:hidden text-xl"
+              onClick={() => {
+                setOpenMobile(true);
+                setOpenUser(false);
+              }}
+            >
+              <FaBars />
+            </button>
 
-        {/* LOGO */}
-        <div className="w-10 h-10 md:w-14 md:h-14 rounded-full overflow-hidden shrink-0">
-          <Link to="/">
-            <img
-              src={logo}
-              alt="logo"
-              className="w-full h-full object-cover cursor-pointer"
-            />
-          </Link>
-        </div>
+            {/* MENU DESKTOP */}
+            <div className="hidden md:flex gap-4">
+              {menu.map((item, i) => (
+                <div key={i} className="relative group">
+                  {/* MENU CHA */}
+                  <div
+                    onClick={() => item.path && navigate(item.path)}
+                    className={`cursor-pointer px-3 py-2 rounded-lg transition-all
+    ${isParentActive(item)
+                        ? "bg-blue-800 text-white"
+                        : "hover:bg-blue-800"
+                      }`}
+                  >
+                    {item.name}
+                  </div>
 
-        {/* MENU CENTER */}
-        <nav className="flex-1 flex justify-center items-center gap-6 md:gap-8 pl-3">
-          {/* THI */}
-          {/* THI */}
-          <div
-            ref={generalRef}
-            onClick={() => {
-              setActiveMenu("exam");
-              setShowExamMenu(!showExamMenu);
-              navigate("/"); // thêm dòng này
-            }}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition font-semibold
-  ${activeMenu === "exam"
-                ? "bg-white text-green-700"
-                : "hover:bg-green-600"
-              }`}
-          >
-            <GraduationCap size={18} />
-            Thi
+                  {/* CẦU NỐI */}
+                  {item.children && (
+                    <div className="absolute left-0 top-full h-3 w-full"></div>
+                  )}
+
+                  {/* DROPDOWN */}
+                  {item.children && (
+                    <div className="absolute left-0 top-full mt-3 opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
+                      <div className="bg-gray-100 rounded-xl shadow-lg w-72 py-2">
+                        {item.children.map((sub, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() => navigate(sub.path)}
+                            className="flex justify-between items-center px-4 py-3 text-sm text-gray-800 hover:bg-gray-200 cursor-pointer"
+                          >
+                            <span>{sub.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* CÁ NHÂN */}
-          <NavLink
-            to="/exam-dashboard"
-            onClick={() => {
-              setActiveMenu("profile");
-              setShowExamMenu(false);
-            }}
-            className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg transition whitespace-nowrap font-semibold
-            ${activeMenu === "profile"
-                ? "bg-white text-green-700"
-                : "hover:bg-green-600"
-              }`}
-          >
-            <User size={18} />
-            <span className="whitespace-nowrap">Cá nhân</span>
-          </NavLink>
-        </nav>
+          {/* RIGHT */}
+          <div className="relative">
+            {!isLoggedIn ? (
+              // ===== CHƯA ĐĂNG NHẬP =====
+              <button
+                onClick={() => navigate("/login")}
+                className="bg-white text-black px-4 py-2 rounded-xl border border-gray-300 font-medium hover:bg-gray-100 transition"
+              >
+                Đăng nhập
+              </button>
+            ) : (
+              // ===== ĐÃ ĐĂNG NHẬP =====
+              <div className="relative group">
+                <div
+                  onClick={() => setOpenUser(true)}
+                  className="cursor-pointer"
+                >
+                  <FaUserCircle className="text-2xl text-white" />
+                </div>
 
-        {/* LOGIN */}
-        <div className="w-80 flex justify-end relative">
-          {user ? (
-            <div
-              ref={userMenuRef}
-              className="flex items-center gap-3 text-white font-semibold"
-            >
-              {/* Text chỉ hiện từ md trở lên */}
-              <span className="hidden md:inline whitespace-nowrap">
-                Xin chào! {user}
-              </span>
+                {/* DROPDOWN */}
+                <div className="absolute right-0 mt-3 opacity-0 invisible group-hover:visible group-hover:opacity-100 transition-all duration-200 z-50">
+                  <div className="bg-gray-100 rounded-xl shadow-lg w-64 py-2">
 
-              {/* Icon luôn hiển thị */}
-              <img
-                src={menuBar}
-                alt="menu"
-                onClick={() => setShowUserMenu(!showUserMenu)}
-                className="w-7 h-7 cursor-pointer flex-shrink-0"
-              />
-
-              {/* ===== DROPDOWN ===== */}
-              {showUserMenu && (
-                <div className="absolute right-0 top-12 w-64 bg-white rounded-xl shadow-xl p-4 z-50 text-gray-700">
-
-                  {/* Tên + ID */}
-                  <div className="mb-3">
-                    <div className="font-semibold text-gray-800">{user}</div>
-                    <div className="text-sm text-gray-500">
-                      ID: {userId}
+                    {/* HEADER */}
+                    <div className="px-4 py-3 border-b font-semibold text-black">
+                      0979370077
                     </div>
-                  </div>
 
-                  <div className="border-t pt-3 space-y-3">
-                    <Link
-                      to="/profile-user"
-                      className="block cursor-pointer hover:text-green-600"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      Thông tin cá nhân
-                    </Link>
-
-                    {/* Thông báo */}
-                    <Link
-                      to="/notifications"
-                      className="block hover:text-green-600 transition"
-                      onClick={() => setShowUserMenu(false)}
-                    >
-                      Thông báo
-                    </Link>
-
-                    <div
-                      onClick={() => {
-                        localStorage.removeItem("user");
-                        setShowUserMenu(false);
-                        window.location.href = "/";
-                      }}
-                      className="cursor-pointer text-red-500 hover:text-red-600"
-                    >
-                      Đăng xuất
+                    {/* MENU */}
+                    <div className="py-2">
+                      <div className="px-4 py-2 hover:bg-gray-200 cursor-pointer text-black">
+                        Tài khoản
+                      </div>
+                      <div className="px-4 py-2 hover:bg-gray-200 cursor-pointer text-black">
+                        Thông tin gian hàng
+                      </div>
+                      <div
+                        onClick={() => {
+                          localStorage.removeItem("isLogin");
+                          navigate("/");
+                        }}
+                        className="px-4 py-2 text-red-500 cursor-pointer"
+                      >
+                        Đăng xuất
+                      </div>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-          ) : (
-            <Link
-              to="/login"
-              className="
-bg-white text-green-700 
-px-3 md:px-4 
-py-1.5 md:py-2 
-text-sm md:text-base 
-rounded-lg 
-font-medium 
-whitespace-nowrap
-"
-            >
-              Đăng nhập
-            </Link>
-          )}
+              </div>
+            )}
+          </div>
         </div>
       </div>
-
-      {/* ================= SUB HEADER ================= */}
-      {/* {showExamMenu && ( */}
-      {showExamMenu && (
-        <div className="w-full bg-gray-200 text-gray-700 shadow-sm relative">
-          <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 flex items-center justify-center gap-8 md:gap-16 text-xs md:text-sm font-semibold whitespace-nowrap">
-
-            {/* ================= GIÁO DỤC PHỔ THÔNG ================= */}
-            <div
-              className="relative"
-              onMouseEnter={() => !pinned && setShowMega(true)}
-              onMouseLeave={() => !pinned && setShowMega(false)}
-            >
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-
-                  setPinned((prev) => !prev);   // chuẩn React
-                  setShowMega(true);
-
-                  setPinnedLanguage(false);
-                  setShowLanguageMega(false);
-
-                  setSelectedGrade(null);
-                }}
-                className={`flex items-center gap-2 cursor-pointer transition
-      ${showMega || pinned
-                    ? "text-yellow-600"
-                    : "hover:text-yellow-600"
-                  }`}
-              >
-                GIÁO DỤC PHỔ THÔNG
-                <ChevronDown size={16} />
+      {/* ================= MOBILE MENU ================= */}
+      {openMobile && (
+        <div className="fixed inset-0 z-50">
+          <div className="flex h-full">
+            {/* SIDEBAR */}
+            <div className="w-72 bg-white h-full shadow-xl flex flex-col">
+              {/* HEADER */}
+              <div className="flex items-center gap-3 p-4 border-b">
+                <button onClick={() => setOpenMobile(false)}>←</button>
+                <span className="font-semibold">Menu</span>
               </div>
 
-              {(showMega || pinned) && (
-                <div
-                  ref={generalRef}
-                  onClick={(e) => e.stopPropagation()}
-                  className="
-        fixed md:absolute
-        top-[120px] md:top-10
-        left-1/2 -translate-x-1/2
-        w-[95%] md:w-screen
-        max-w-[1200px]
-        bg-white rounded-2xl shadow-2xl
-        p-4 md:p-8
-        z-50
-        transition-all duration-300
-      "
-                >
-
-                  {/* DESKTOP */}
-                  <div className="hidden md:flex">
-                    <div className="md:w-80 border-r pr-8">
-                      {Object.keys(generalData).map((grade) => (
-                        <div
-                          key={grade}
-                          onClick={() => setSelectedGrade(grade)}
-                          className={`px-4 py-2 rounded-lg cursor-pointer mb-1 transition
-                ${selectedGrade === grade
-                              ? "bg-yellow-500 text-white"
-                              : "hover:bg-gray-100"
-                            }`}
-                        >
-                          {grade}
-                        </div>
-                      ))}
+              {/* CONTENT */}
+              <div className="flex-1 overflow-y-auto p-3 pb-10">
+                {menu.map((item, i) => (
+                  <div key={i} className="mb-4">
+                    <div className="font-semibold text-gray-800 py-2">
+                      {item.name}
                     </div>
 
-                    <div className="flex-1 grid grid-cols-2 gap-8 pl-8 text-sm">
-                      {Object.keys(
-                        generalData[selectedGrade || Object.keys(generalData)[0]]
-                      ).map((subject) => (
-                        <div key={subject}>
-                          <div className="bg-gray-100 px-4 py-2 rounded-lg font-semibold mb-4 border">
-                            {subject}
-                          </div>
-
-                          <ul className="space-y-2 text-gray-600">
-                            {generalData[
-                              selectedGrade || Object.keys(generalData)[0]
-                            ][subject].map((item, i) => (
-                              <li
-                                key={i}
-                                className="hover:text-green-600 cursor-pointer"
-                              >
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* MOBILE */}
-                  <div className="md:hidden h-full max-h-[calc(100vh-120px)] overflow-y-auto pr-2">
-
-                    {!selectedGrade && (
-                      <div className="space-y-3 pb-10">
-                        {Object.keys(generalData).map((grade) => (
+                    {item.children && (
+                      <div className="ml-3 space-y-2">
+                        {item.children.map((sub, idx) => (
                           <div
-                            key={grade}
-                            onClick={() => setSelectedGrade(grade)}
-                            className="px-4 py-3 bg-gray-100 rounded-lg cursor-pointer 
-                     hover:bg-yellow-500 hover:text-white transition"
+                            key={idx}
+                            onClick={() => navigate(sub.path)}
+                            className={`flex justify-between items-center px-4 py-3 text-sm cursor-pointer rounded-md
+  ${location.pathname === sub.path
+                                ? "bg-blue-800 text-blue-600 font-medium"
+                                : "text-gray-800 hover:bg-gray-200"
+                              }`}
                           >
-                            {grade}
+                            <span>{sub.name}</span>
                           </div>
                         ))}
                       </div>
                     )}
-
-                    {selectedGrade && subjects && (
-                      <div className="pb-10">
-
-                        <div
-                          onClick={() => setSelectedGrade(null)}
-                          className="mb-4 text-sm text-blue-500 cursor-pointer"
-                        >
-                          ← Quay lại
-                        </div>
-
-                        <div className="space-y-6 text-sm">
-                          {Object.keys(subjects).map((subject) => (
-                            <div key={subject}>
-                              <div className="bg-gray-100 px-4 py-2 rounded-lg font-semibold mb-2 border">
-                                {subject}
-                              </div>
-
-                              <ul className="space-y-2 text-gray-600">
-                                {subjects[subject].map((item, i) => (
-                                  <li
-                                    key={i}
-                                    className="hover:text-green-600 cursor-pointer"
-                                  >
-                                    {item}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          ))}
-                        </div>
-
-                      </div>
-                    )}
-
                   </div>
-                </div>
-              )}
-            </div>
-
-            {/* ================= NGOẠI NGỮ ================= */}
-            <div
-              className="relative"
-              onMouseEnter={() => !pinnedLanguage && setShowLanguageMega(true)}
-              onMouseLeave={() => !pinnedLanguage && setShowLanguageMega(false)}
-            >
-              <div
-
-                onClick={(e) => {
-                  e.stopPropagation();
-
-                  setPinnedLanguage((prev) => !prev);   // toggle chuẩn
-                  setShowLanguageMega(true);
-
-                  // đóng phổ thông
-                  setPinned(false);
-                  setShowMega(false);
-
-                  setSelectedEnglishGrade(null);
-                }}
-                className={`flex items-center gap-2 cursor-pointer transition
-            ${showLanguageMega || pinnedLanguage
-                    ? "text-yellow-600"
-                    : "hover:text-yellow-600"
-                  }`}
-              >
-                NGOẠI NGỮ
-                <ChevronDown size={16} />
+                ))}
               </div>
-
-              {(showLanguageMega || pinnedLanguage) && (
-                <div
-                  ref={languageRef}
-                  onClick={(e) => e.stopPropagation()}
-                  className="
-              fixed md:absolute
-              top-[120px] md:top-10
-              left-1/2 -translate-x-1/2
-              w-[95%] md:w-screen
-              max-w-[1000px]
-              bg-white rounded-2xl shadow-2xl
-              p-4 md:p-8
-              z-50
-              transition-all duration-300
-            "
-                >
-
-                  {/* DESKTOP */}
-                  <div className="hidden md:flex">
-                    <div className="md:w-80 border-r pr-8">
-                      {Object.keys(englishData).map((grade) => (
-                        <div
-                          key={grade}
-                          onClick={() => setSelectedEnglishGrade(grade)}
-                          className={`px-4 py-2 rounded-lg cursor-pointer mb-1 transition
-          ${selectedEnglishGrade === grade
-                              ? "bg-yellow-500 text-white"
-                              : "hover:bg-gray-100"
-                            }`}
-                        >
-                          {grade}
-                        </div>
-                      ))}
-                    </div>
-
-                    <div className="flex-1 pl-8 text-sm">
-                      <ul className="grid grid-cols-2 gap-4 text-gray-600">
-                        {(englishData[selectedEnglishGrade || Object.keys(englishData)[0]] || []).map((item, i) => (
-                          <li key={i} className="hover:text-green-600 cursor-pointer">
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-
-                  {/* MOBILE */}
-                  <div className="md:hidden">
-
-                    {!selectedEnglishGrade && (
-                      <div className="space-y-3">
-                        {Object.keys(englishData).map((grade) => (
-                          <div
-                            key={grade}
-                            onClick={() => setSelectedEnglishGrade(grade)}
-                            className="px-4 py-3 bg-gray-100 rounded-lg cursor-pointer hover:bg-yellow-500 hover:text-white transition"
-                          >
-                            {grade}
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {selectedEnglishGrade && (
-                      <div>
-                        <div
-                          onClick={() => setSelectedEnglishGrade(null)}
-                          className="mb-4 text-sm text-blue-500 cursor-pointer"
-                        >
-                          ← Quay lại
-                        </div>
-
-                        <ul className="space-y-3 text-sm text-gray-600">
-                          {englishSubjects.map((item, i) => (
-                            <li key={i} className="hover:text-green-600 cursor-pointer">
-                              {item}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                  </div>
-
-                </div>
-              )}
             </div>
 
+            {/* OVERLAY */}
+            <div
+              className="flex-1 bg-black/40"
+              onClick={() => setOpenMobile(false)}
+            />
           </div>
         </div>
       )}
-    </header>
-  );
-};
 
-export default Header;
+      {/* ================= USER MOBILE ================= */}
+      {openUser && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div className="flex h-full">
+            {/* OVERLAY */}
+            <div
+              className="flex-1 bg-black/40"
+              onClick={() => setOpenUser(false)}
+            />
+
+            {/* SIDEBAR RIGHT */}
+            <div className="w-80 bg-white h-full shadow-xl flex flex-col">
+              {/* HEADER */}
+              <div className="p-4 border-b flex items-center justify-between">
+                <span className="font-semibold">0979370077</span>
+                <button onClick={() => setOpenUser(false)}>✕</button>
+              </div>
+
+              {/* MENU */}
+              <div className="flex-1 overflow-y-auto p-4 space-y-3 text-gray-700">
+                <div className="cursor-pointer">👤 Tài khoản</div>
+                <div className="cursor-pointer">⚙️ Thiết lập cửa hàng</div>
+                <div className="cursor-pointer">🏬 Quản lý mẫu in</div>
+                <div className="cursor-pointer">📍 Quản lý chi nhánh</div>
+                <div className="cursor-pointer">🧾 Lịch sử thao tác</div>
+                <div className="cursor-pointer text-red-500">
+                  🚪 Đăng xuất
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
