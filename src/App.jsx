@@ -5,6 +5,8 @@ import { Toaster } from "react-hot-toast";
 import Header from "./components/layout/Header";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Products from "./pages/Products";
+import PriceBook from "./pages/PriceBook";
 
 const App = () => {
   return (
@@ -23,6 +25,8 @@ const App = () => {
               <Header />
               <Routes>
                 <Route path="/" element={<Home />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/price-book" element={<PriceBook />} />
               </Routes>
             </>
           }

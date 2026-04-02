@@ -11,18 +11,14 @@ const menu = [
   {
     name: "Hàng hóa",
     children: [
-      { name: "Danh mục", path: "/hang-hoa/danh-muc" },
-      { name: "Thiết lập giá", path: "/hang-hoa/gia" },
+      { name: "Danh mục", path: "/products" },
+      { name: "Thiết lập giá", path: "/price-book" },
       { name: "Kiểm kho", path: "/hang-hoa/kiem-kho" },
     ],
   },
 
   {
-    name: "Phòng/Bàn",
-    children: [
-      { name: "Danh sách phòng bàn", path: "/phong-ban" },
-      { name: "Gọi món qua mã QR", path: "/qr-order" },
-    ],
+    name: "Nhà cung cấp", path: "/nha-cung-cap",
   },
 
   {
