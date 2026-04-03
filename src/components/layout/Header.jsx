@@ -13,7 +13,7 @@ const menu = [
     children: [
       { name: "Danh mục", path: "/products" },
       { name: "Thiết lập giá", path: "/price-book" },
-      { name: "Kiểm kho", path: "/hang-hoa/kiem-kho" },
+      { name: "Kiểm kho", path: "/stock-takes" },
     ],
   },
 
