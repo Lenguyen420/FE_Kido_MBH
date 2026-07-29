@@ -4,6 +4,8 @@ import { getAccessToken } from "./authSession";
 const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:3002";
 
 let socket;
+let dashboardRefreshTimer;
+const dashboardSubscribers = new Set();
 
 export const SOCKET_EVENTS = {
   ORDER_CREATED: "order:created",
@@ -56,4 +58,34 @@ export const joinDashboard = (payload = {}) => {
 
 export const leaveDashboard = (payload = {}) => {
   getSocket().emit("dashboard:leave", payload);
+};
+
+const notifyDashboardSubscribers = () => {
+  clearTimeout(dashboardRefreshTimer);
+  dashboardRefreshTimer = setTimeout(() => {
+    dashboardSubscribers.forEach((listener) => listener());
+  }, 250);
+};
+
+export const subscribeDashboardUpdates = (listener) => {
+  const activeSocket = getSocket();
+  const isFirstSubscriber = dashboardSubscribers.size === 0;
+  dashboardSubscribers.add(listener);
+
+  if (isFirstSubscriber) {
+    activeSocket.on(SOCKET_EVENTS.DASHBOARD_UPDATED, notifyDashboardSubscribers);
+    joinDashboard();
+  }
+
+  return () => {
+    dashboardSubscribers.delete(listener);
+
+    if (dashboardSubscribers.size === 0) {
+      clearTimeout(dashboardRefreshTimer);
+      activeSocket.off(
+        SOCKET_EVENTS.DASHBOARD_UPDATED,
+        notifyDashboardSubscribers
+      );
+    }
+  };
 };

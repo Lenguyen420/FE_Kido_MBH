@@ -11,7 +11,7 @@ export const walletApi = {
   },
 
   clearCustomerDebt: async (data) => {
-    const response = await axiosInstance.post("/wallet/customer-debt/clearance", data);
+    const response = await axiosInstance.post("/wallets/customer-debt/clearance", data);
     return response.data.data || response.data;
   },
 };

@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { reportApi } from "../../api/reportApi";
+import { useDashboardRefresh } from "../../hooks/useDashboardRefresh";
 
 export default function Summary() {
   const [todayStats, setTodayStats] = useState(null);
   const [loading, setLoading] = useState(true);
+  const dashboardRevision = useDashboardRefresh();
 
   useEffect(() => {
+    let active = true;
+
     const fetchTodayStats = async () => {
       try {
         // Get today's date range
@@ -26,16 +30,23 @@ export default function Summary() {
           orders: revenue.orderCount || 0,
           customers: customers.totalCustomers || 0,
         };
-        setTodayStats(stats);
-      } catch (error) {
+        if (active) {
+          setTodayStats(stats);
+        }
+      } catch {
         // Silent fail
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
     fetchTodayStats();
-  }, []);
+    return () => {
+      active = false;
+    };
+  }, [dashboardRevision]);
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat("vi-VN").format(value || 0);

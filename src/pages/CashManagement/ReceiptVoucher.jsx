@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import ReceiptVoucherHeader from "../../components/ReceiptVoucher/ReceiptVoucherHeader";
 import ReceiptVoucherInfo from "../../components/ReceiptVoucher/ReceiptVoucherInfo";
 import ReceiptVoucherTable from "../../components/ReceiptVoucher/ReceiptVoucherTable";
@@ -15,12 +15,11 @@ export default function ReceiptVoucher({
   const [paymentMethod, setPaymentMethod] = useState("CASH");
   const [note, setNote] = useState("");
   const [reference, setReference] = useState("");
-  const [voucherNumber, setVoucherNumber] = useState("PT000003");
+  const [voucherNumber] = useState("PT000003");
   const [selectedFile, setSelectedFile] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [funds, setFunds] = useState([]);
 
-  const [voucherDate, setVoucherDate] = useState(() => {
+  const [voucherDate] = useState(() => {
     const now = new Date();
     const pad = (n) => (n < 10 ? "0" + n : n);
     const timezoneOffset = -now.getTimezoneOffset();
@@ -33,25 +32,26 @@ export default function ReceiptVoucher({
     return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}${diff}${padOffset(timezoneOffset)}`;
   });
 
-  useEffect(() => {
-    const fetchFunds = async () => {
-      try {
-        const data = await financeApi.getFunds();
-        setFunds(data || []);
-      } catch (err) {
-        console.error("Failed to fetch funds:", err);
-      }
-    };
-    fetchFunds();
-  }, []);
-
   const handleReceiptTypeChange = (type) => {
     setReceiptType(type);
     setSelectedSource(null);
+    setItems([]);
   };
 
   const handleSelectedSourceChange = (source) => {
     setSelectedSource(source);
+    if (receiptType === "Thu khách hàng" && source && items.length === 0) {
+      setItems([
+        {
+          id: `debt-${source.id}`,
+          description: "Thu hồi công nợ khách hàng",
+          amount: Number(source.debt) || 0,
+          category: "Thu hồi công nợ",
+        },
+      ]);
+      return;
+    }
+
     if (items.length > 0) {
       const updatedItems = items.map((item) => {
         if (item.category === "Thu hồi công nợ") {
@@ -80,63 +80,75 @@ export default function ReceiptVoucher({
       alert("Tổng số tiền thu phải lớn hơn 0!");
       return;
     }
+    if (
+      receiptType === "Thu khách hàng" &&
+      items.some((item) => item.category !== "Thu hồi công nợ")
+    ) {
+      alert("Phiếu thu khách hàng chỉ nhận các dòng Thu hồi công nợ!");
+      return;
+    }
+    if (
+      receiptType === "Thu khách hàng" &&
+      totalAmount > Number(selectedSource.debt || 0)
+    ) {
+      alert("Tổng số tiền thu không được vượt quá công nợ hiện tại!");
+      return;
+    }
 
     setIsSaving(true);
     try {
-      // Find matching fund or default
-      const matchedFund = funds.find((f) => {
-        const nameLower = (f.name || "").toLowerCase();
-        if (paymentMethod === "CASH") {
-          return nameLower.includes("tiền mặt") || nameLower.includes("cash");
-        } else {
-          return nameLower.includes("ngân hàng") || nameLower.includes("bank") || nameLower.includes("gửi");
-        }
-      }) || funds[0];
-      const fundId = matchedFund?.id || "fund-uuid";
-
-      // Upload file if exists
-      let attachments = [];
-      if (selectedFile) {
-        try {
-          const res = await productApi.uploadImage(selectedFile);
-          attachments = [
-            {
-              name: selectedFile.name,
-              url: res.path || res.imageUrl || "",
-              mimeType: selectedFile.type,
-              size: selectedFile.size,
-            },
-          ];
-        } catch (uploadErr) {
-          console.error("Upload failed:", uploadErr);
-          alert("Tải file đính kèm thất bại!");
-          setIsSaving(false);
-          return;
-        }
-      }
-
-      const payloadItems = items.map((item) => ({
-        amount: Number(item.amount) || 0,
-        description: item.description || "",
-      }));
-
-      const payload = {
-        paymentMethod,
-        fundId,
-        voucherNumber,
-        voucherDate,
-        reference,
-        note,
-        items: payloadItems,
-        attachments,
-      };
-
       if (receiptType === "Thu khách hàng") {
-        payload.customerId = selectedSource.id;
-        await walletApi.clearCustomerDebt(payload);
+        const lineDescription = items
+          .map((item) => item.description?.trim())
+          .filter(Boolean)
+          .join("; ");
+
+        await walletApi.clearCustomerDebt({
+          customerId: selectedSource.id,
+          amount: totalAmount,
+          paymentMethod,
+          note: note.trim() || lineDescription || undefined,
+        });
       } else {
-        payload.sourceId = selectedSource.id;
-        payload.sourceType = selectedSource.type; // e.g. "Nhân viên", etc.
+        // The generic receipt flow keeps its existing attachment contract.
+        let attachments = [];
+        if (selectedFile) {
+          try {
+            const res = await productApi.uploadImage(selectedFile);
+            attachments = [
+              {
+                name: selectedFile.name,
+                url: res.path || res.imageUrl || "",
+                mimeType: selectedFile.type,
+                size: selectedFile.size,
+              },
+            ];
+          } catch (uploadErr) {
+            console.error("Upload failed:", uploadErr);
+            alert("Tải file đính kèm thất bại!");
+            setIsSaving(false);
+            return;
+          }
+        }
+
+        const payloadItems = items.map((item) => ({
+          amount: Number(item.amount) || 0,
+          description: item.description || "",
+        }));
+
+        const payload = {
+          paymentMethod,
+          amount: totalAmount,
+          voucherNumber,
+          voucherDate,
+          reference,
+          note,
+          items: payloadItems,
+          attachments,
+          sourceId: selectedSource.id,
+          sourceType: selectedSource.type,
+        };
+
         await financeApi.createReceipt(payload);
       }
 

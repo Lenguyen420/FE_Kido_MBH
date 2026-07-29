@@ -1,8 +1,9 @@
 
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
 import { reportApi } from "../../api/reportApi";
 import { dashboardApi } from "../../api/dashboardApi";
+import { useDashboardRefresh } from "../../hooks/useDashboardRefresh";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -32,13 +33,13 @@ ChartJS.register(
 );
 
 export default function DashboardCharts() {
+  const dashboardRevision = useDashboardRefresh();
   const tabs = ["Theo giờ", "Theo ngày", "Theo thứ"];
 
   // LEFT
   const [activeTab, setActiveTab] = useState("Theo thứ");
   const [filter, setFilter] = useState("7 ngày qua");
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [revenueData, setRevenueData] = useState(null);
   const [customerStats, setCustomerStats] = useState(null);
   const [hourlyRevenue, setHourlyRevenue] = useState(null);
@@ -54,7 +55,7 @@ export default function DashboardCharts() {
   ];
 
   // Helper to get date range from filter
-  const getDateRange = () => {
+  const getDateRange = useCallback(() => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     let from = new Date(today);
@@ -83,12 +84,13 @@ export default function DashboardCharts() {
 
     const formatDate = (d) => d.toISOString().split('T')[0];
     return { from: formatDate(from), to: formatDate(to) };
-  };
+  }, [filter]);
 
   // Fetch data from API when filter changes
   useEffect(() => {
+    let active = true;
+
     const fetchData = async () => {
-      setLoading(true);
       try {
         const { from, to } = getDateRange();
         const todayStr = new Date().toISOString().split("T")[0];
@@ -107,23 +109,22 @@ export default function DashboardCharts() {
         ]);
         // Extract data from API response wrapper
         const revenue = revenueRes.data || revenueRes;
-        setRevenueData(revenue);
-        setCustomerStats(customers);
-        setHourlyRevenue(hourlyRevRes);
-        setHourlyCustomers(hourlyCustRes);
+        if (active) {
+          setRevenueData(revenue);
+          setCustomerStats(customers);
+          setHourlyRevenue(hourlyRevRes);
+          setHourlyCustomers(hourlyCustRes);
+        }
       } catch (error) {
         console.error("Failed to fetch dashboard data:", error);
-      } finally {
-        setLoading(false);
       }
     };
 
     fetchData();
-
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
-  }, [filter]);
+    return () => {
+      active = false;
+    };
+  }, [filter, getDateRange, dashboardRevision]);
 
 
   // Transform API data to chart format

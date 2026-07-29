@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { AlertCircle, ChevronDown, Info } from "lucide-react";
 import { dashboardApi } from "../../api/dashboardApi";
+import { useDashboardRefresh } from "../../hooks/useDashboardRefresh";
 
 const filterOptions = [
   { label: "Hôm nay", value: "today" },
@@ -27,6 +28,7 @@ const getStage = (stages, key) => {
 };
 
 export default function StaffAndCancelReport() {
+  const dashboardRevision = useDashboardRefresh();
   const [filter, setFilter] = useState("7 ngày qua");
   const [open, setOpen] = useState(false);
   const [cancellations, setCancellations] = useState(null);
@@ -98,7 +100,7 @@ export default function StaffAndCancelReport() {
     return () => {
       active = false;
     };
-  }, [filterValue]);
+  }, [filterValue, dashboardRevision]);
 
   const cancelSummary = cancellations?.summary || {};
   const cancelStages = cancellations?.stages || [];

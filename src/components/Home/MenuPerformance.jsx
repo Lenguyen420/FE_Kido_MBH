@@ -13,6 +13,7 @@ import {
 
 import { Doughnut } from "react-chartjs-2";
 import { dashboardApi } from "../../api/dashboardApi";
+import { useDashboardRefresh } from "../../hooks/useDashboardRefresh";
 
 ChartJS.register(
   ArcElement,
@@ -50,6 +51,7 @@ const formatCompactCurrency = (value) => {
 const formatCurrency = (value) => new Intl.NumberFormat("vi-VN").format(Number(value) || 0);
 
 export default function MenuPerformance() {
+  const dashboardRevision = useDashboardRefresh();
 
   const [viewType, setViewType] = useState("Theo loại");
 
@@ -106,7 +108,7 @@ export default function MenuPerformance() {
     return () => {
       active = false;
     };
-  }, [filterValue, groupBy]);
+  }, [filterValue, groupBy, dashboardRevision]);
 
   return (
     <div className="

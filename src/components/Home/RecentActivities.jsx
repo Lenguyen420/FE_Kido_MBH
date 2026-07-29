@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FileText, RotateCcw } from "lucide-react";
 import { dashboardApi } from "../../api/dashboardApi";
+import { useDashboardRefresh } from "../../hooks/useDashboardRefresh";
 
 const formatMoney = (value) => new Intl.NumberFormat("vi-VN").format(value || 0);
 
@@ -23,6 +24,7 @@ const formatRelativeTime = (value) => {
 export default function RecentActivities() {
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
+  const dashboardRevision = useDashboardRefresh();
 
   useEffect(() => {
     let active = true;
@@ -46,13 +48,11 @@ export default function RecentActivities() {
     };
 
     loadActivities();
-    const interval = setInterval(loadActivities, 30000);
 
     return () => {
       active = false;
-      clearInterval(interval);
     };
-  }, []);
+  }, [dashboardRevision]);
 
   const data = useMemo(
     () =>
