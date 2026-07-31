@@ -99,7 +99,7 @@ export default function StockOutListTable({
 
       {/* Desktop view */}
       <div className="hidden overflow-x-auto lg:block">
-        <table className="w-full min-w-[1680px] border-collapse text-sm">
+        <table className="w-full min-w-[1680px] border-collapse text-sm [&_tbody_td]:!py-2">
           <thead>
             <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
               {columns.map((column) => (
@@ -134,29 +134,38 @@ export default function StockOutListTable({
                   <td className="px-4 py-3">
                     <button
                       type="button"
-                      className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline text-left"
+                      title={receipt.voucherNo}
+                      className="block max-w-[150px] truncate text-left font-medium text-indigo-600 hover:text-indigo-700 hover:underline"
                     >
                       {receipt.voucherNo}
                     </button>
                   </td>
-                  <td className="px-4 py-3 leading-5 text-gray-800">
-                    {receipt.description}
+                  <td className="px-4 py-3 text-gray-800">
+                    <div className="max-w-[540px] truncate" title={receipt.description}>
+                      {receipt.description}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-right font-semibold text-gray-900 tabular-nums">
                     {formatNumber(receipt.totalAmount)}
                   </td>
                   <td className="px-4 py-3 text-gray-700">
-                    {receipt.receiver}
+                    <div className="max-w-[155px] truncate" title={receipt.receiver}>
+                      {receipt.receiver}
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-center">
                     {/* Placeholder status */}
                     <span className="text-gray-400">-</span>
                   </td>
-                  <td className="px-4 py-3 leading-5 text-gray-700">
-                    {receipt.voucherType}
+                  <td className="px-4 py-3 text-gray-700">
+                    <div className="max-w-[250px] truncate" title={receipt.voucherType}>
+                      {receipt.voucherType}
+                    </div>
                   </td>
-                  <td className="px-4 py-3 leading-5 text-gray-700">
-                    {receipt.branch}
+                  <td className="px-4 py-3 text-gray-700">
+                    <div className="max-w-[210px] truncate" title={receipt.branch}>
+                      {receipt.branch}
+                    </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-center">

@@ -53,8 +53,8 @@ export default function SidebarFilterStock() {
 
   return (
     <div className="w-full space-y-4">
-      <div className="rounded-xl border border-gray-300 bg-gray-50 p-4">
-        <p className="mb-3 font-semibold">Tìm kiếm</p>
+      <div className="rounded-xl bg-white p-4 shadow">
+        <p className="mb-3 font-medium">Tìm kiếm</p>
 
         <input
           type="text"
@@ -69,12 +69,12 @@ export default function SidebarFilterStock() {
         />
       </div>
 
-      <div className="rounded-xl border border-gray-300 bg-gray-50 p-4">
+      <div className="rounded-xl bg-white p-4 shadow">
         <div
           className="flex cursor-pointer items-center justify-between"
           onClick={() => setOpenStatus((current) => !current)}
         >
-          <p className="font-semibold">Trạng thái</p>
+          <p className="font-medium">Trạng thái</p>
 
           <ChevronDown
             size={16}
@@ -108,8 +108,8 @@ export default function SidebarFilterStock() {
         </div>
       </div>
 
-      <div className="rounded-xl border border-gray-300 bg-gray-50 p-4">
-        <p className="mb-3 font-semibold">Thời gian</p>
+      <div className="rounded-xl bg-white p-4 shadow">
+        <p className="mb-3 font-medium">Thời gian</p>
 
         <div className="space-y-3">
           <label className="flex items-center gap-2">

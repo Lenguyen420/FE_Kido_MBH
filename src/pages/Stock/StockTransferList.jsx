@@ -5,6 +5,7 @@ import StockTransferDetailPanel from "../../components/StockTransfer/StockTransf
 import StockTransferListTable from "../../components/StockTransfer/StockTransferListTable";
 import StockTransferListToolbar from "../../components/StockTransfer/StockTransferListToolbar";
 import { stockTransferApi } from "../../api";
+import StockSidebarFilters from "../../components/Stock/StockSidebarFilters";
 
 export default function StockTransferList() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function StockTransferList() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isWideView, setIsWideView] = useState(false);
 
   const loadTransfers = async () => {
     try {
@@ -71,30 +73,39 @@ export default function StockTransferList() {
     setSelectedTransferId("");
   };
 
-  const totalQuantity = useMemo(() => {
-    return filteredTransfers.reduce((sum, transfer) => {
-      const items = transfer.items || [];
-      return sum + items.reduce((s, item) => s + Number(item.quantity || 0), 0);
-    }, 0);
-  }, [filteredTransfers]);
-
   return (
-    <div className="min-h-screen bg-gray-100 py-3 md:py-4">
-      <div className="mx-auto max-w-[1800px] px-3 sm:px-4 lg:px-5">
+    <div className="min-h-screen bg-[#f3f5f7]">
+      <div
+        className={`mx-auto w-full px-3 py-4 sm:px-4 lg:px-5 ${
+          isWideView ? "max-w-none" : "max-w-[1600px]"
+        }`}
+      >
         <StockHeader
           activeTab="transfer"
           onRefresh={loadTransfers}
-          totalCount={filteredTransfers.length}
-          totalAmount={totalQuantity}
         />
 
-        <div className="mt-4 flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
-          <StockTransferListToolbar
-            searchKeyword={searchKeyword}
-            onSearchChange={handleSearchChange}
-            onCreateClick={() => navigate("/stock-transfer/create")}
-            onReload={loadTransfers}
-          />
+        <div
+          className={`mt-4 grid grid-cols-1 gap-4 ${
+            isWideView ? "" : "xl:grid-cols-[320px_minmax(0,1fr)]"
+          }`}
+        >
+          {!isWideView && (
+            <aside className="min-w-0">
+              <StockSidebarFilters type="transfer" />
+            </aside>
+          )}
+
+          <div className="min-w-0 flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
+            <StockTransferListToolbar
+              searchKeyword={searchKeyword}
+              onSearchChange={handleSearchChange}
+              onCreateClick={() => navigate("/stock-transfer/create")}
+              onReload={loadTransfers}
+              showFilterButton={isWideView}
+              isWideView={isWideView}
+              onToggleWideView={() => setIsWideView((current) => !current)}
+            />
 
           <StockTransferListTable
             transfers={filteredTransfers}
@@ -104,7 +115,8 @@ export default function StockTransferList() {
             error={error}
           />
 
-          <StockTransferDetailPanel transfer={selectedTransfer} />
+            <StockTransferDetailPanel transfer={selectedTransfer} />
+          </div>
         </div>
       </div>
     </div>

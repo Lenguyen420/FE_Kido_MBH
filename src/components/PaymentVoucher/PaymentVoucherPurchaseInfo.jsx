@@ -1,17 +1,11 @@
 import React from "react";
-import {
-  Calendar,
-  Plus,
-} from "lucide-react";
+import { Calendar } from "lucide-react";
 
 import { useState } from "react";
-import AddSupplierModal from "../Suppliers/AddSupplierModal";
+import PaymentVoucherSupplierSelect from "./PaymentVoucherSupplierSelect";
 
 export default function PaymentVoucherPurchaseInfo() {
-
-
-  const [openAddSupplier, setOpenAddSupplier] = useState(false);
-
+  const [selectedSupplier, setSelectedSupplier] = useState(null);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 py-4">
@@ -44,21 +38,10 @@ export default function PaymentVoucherPurchaseInfo() {
     </label>
 
     <div className="flex flex-col xl:flex-row gap-3">
-      <div className="flex flex-1 min-w-0">
-        <select className="flex-1 min-w-0 border border-gray-300 rounded-l-md px-3 h-10">
-          <option />
-        </select>
-
-        <button
-  onClick={() => setOpenAddSupplier(true)}
-  className="w-10 h-10 border border-gray-300 border-l-0 rounded-r-md flex items-center justify-center hover:bg-gray-50"
->
-  <Plus size={16} />
-</button>
-      </div>
+      <PaymentVoucherSupplierSelect onChange={setSelectedSupplier} />
 
       <div className="flex items-center text-gray-600 italic whitespace-nowrap">
-        Tiền nợ NCC: 0
+        Tiền nợ NCC: {Number(selectedSupplier?.debt || 0).toLocaleString("vi-VN")} ₫
       </div>
     </div>
   </div>
@@ -154,10 +137,6 @@ export default function PaymentVoucherPurchaseInfo() {
 
 </div>
 
-<AddSupplierModal
-  open={openAddSupplier}
-  onClose={() => setOpenAddSupplier(false)}
-/>
     </div>
   );
 }

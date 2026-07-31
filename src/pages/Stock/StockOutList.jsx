@@ -5,6 +5,7 @@ import StockOutListTable from "../../components/StockOut/StockOutListTable";
 import StockOutToolbar from "../../components/StockOut/StockOutToolbar";
 import StockOutPagination from "../../components/StockOut/StockOutPagination";
 import StockOutDetailTable from "../../components/StockOut/StockOutDetailTable";
+import StockSidebarFilters from "../../components/Stock/StockSidebarFilters";
 
 export default function StockOutList() {
   const [receipts, setReceipts] = useState([]);
@@ -16,6 +17,7 @@ export default function StockOutList() {
   const [detailLoading, setDetailLoading] = useState(false);
   const [loadedDetailIds, setLoadedDetailIds] = useState(() => new Set());
   const [error, setError] = useState("");
+  const [isWideView, setIsWideView] = useState(false);
 
   const loadReceipts = async () => {
     try {
@@ -138,25 +140,37 @@ export default function StockOutList() {
     setCurrentPage(1);
   };
 
-  const totalAmount = useMemo(() => {
-    return filteredReceipts.reduce((sum, receipt) => sum + (receipt.totalAmount || 0), 0);
-  }, [filteredReceipts]);
-
   return (
-    <div className="min-h-screen bg-gray-100 py-3 md:py-4">
-      <div className="mx-auto max-w-[1800px] px-3 sm:px-4 lg:px-5">
+    <div className="min-h-screen bg-[#f3f5f7]">
+      <div
+        className={`mx-auto w-full px-3 py-4 sm:px-4 lg:px-5 ${
+          isWideView ? "max-w-none" : "max-w-[1600px]"
+        }`}
+      >
         <StockHeader
           activeTab="out"
           onRefresh={loadReceipts}
-          totalCount={filteredReceipts.length}
-          totalAmount={totalAmount}
         />
 
-        <div className="mt-4 flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
-          <StockOutToolbar
-            searchKeyword={searchKeyword}
-            onSearchChange={handleSearchChange}
-          />
+        <div
+          className={`mt-4 grid grid-cols-1 gap-4 ${
+            isWideView ? "" : "xl:grid-cols-[320px_minmax(0,1fr)]"
+          }`}
+        >
+          {!isWideView && (
+            <aside className="min-w-0">
+              <StockSidebarFilters type="out" />
+            </aside>
+          )}
+
+          <div className="min-w-0 flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
+            <StockOutToolbar
+              searchKeyword={searchKeyword}
+              onSearchChange={handleSearchChange}
+              showFilterButton={isWideView}
+              isWideView={isWideView}
+              onToggleWideView={() => setIsWideView((current) => !current)}
+            />
 
           {(loading || detailLoading || error) && (
             <div className="border-b border-gray-300 bg-white px-4 py-3 text-sm">
@@ -184,7 +198,8 @@ export default function StockOutList() {
             onPageSizeChange={handlePageSizeChange}
           />
 
-          <StockOutDetailTable receipt={selectedReceipt} />
+            <StockOutDetailTable receipt={selectedReceipt} />
+          </div>
         </div>
       </div>
     </div>

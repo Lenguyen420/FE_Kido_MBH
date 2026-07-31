@@ -17,16 +17,6 @@ export default function CashHeader({ onRefresh }) {
           Dữ liệu mới
         </button>
       </div>
-
-      <div className="flex flex-wrap gap-2 mb-4">
-        <button className="px-5 py-2 rounded-full bg-indigo-600 text-white text-sm font-medium shadow-sm hover:bg-indigo-700 transition">
-          Thu chi
-        </button>
-
-        <button className="px-5 py-2 rounded-full bg-white border border-gray-300 text-sm font-medium hover:bg-gray-50 transition">
-          Kiểm kê quỹ tiền mặt
-        </button>
-      </div>
     </div>
   );
 }

@@ -6,6 +6,7 @@ import StockInDetailTable from "../../components/StockIn/StockInDetailTable";
 import StockInListTable from "../../components/StockIn/StockInListTable";
 import StockInListToolbar from "../../components/StockIn/StockInListToolbar";
 import StockInPagination from "../../components/StockIn/StockInPagination";
+import StockSidebarFilters from "../../components/Stock/StockSidebarFilters";
 
 export default function StockInList() {
   const navigate = useNavigate();
@@ -13,11 +14,12 @@ export default function StockInList() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedReceiptId, setSelectedReceiptId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(5);
   const [loading, setLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   const [loadedDetailIds, setLoadedDetailIds] = useState(() => new Set());
   const [error, setError] = useState("");
+  const [isWideView, setIsWideView] = useState(false);
 
   const loadReceipts = async () => {
     try {
@@ -144,26 +146,38 @@ export default function StockInList() {
     setCurrentPage(1);
   };
 
-  const totalAmount = useMemo(() => {
-    return filteredReceipts.reduce((sum, receipt) => sum + (receipt.totalAmount || 0), 0);
-  }, [filteredReceipts]);
-
   return (
-    <div className="min-h-screen bg-gray-100 py-3 md:py-4">
-      <div className="mx-auto max-w-[1800px] px-3 sm:px-4 lg:px-5">
+    <div className="min-h-screen bg-[#f3f5f7]">
+      <div
+        className={`mx-auto w-full px-3 py-4 sm:px-4 lg:px-5 ${
+          isWideView ? "max-w-none" : "max-w-[1600px]"
+        }`}
+      >
         <StockHeader
           activeTab="in"
           onRefresh={loadReceipts}
-          totalCount={filteredReceipts.length}
-          totalAmount={totalAmount}
         />
 
-        <div className="mt-4 flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
-          <StockInListToolbar
-            searchKeyword={searchKeyword}
-            onSearchChange={handleSearchChange}
-            onCreateClick={handleCreateClick}
-          />
+        <div
+          className={`mt-4 grid grid-cols-1 gap-4 ${
+            isWideView ? "" : "xl:grid-cols-[320px_minmax(0,1fr)]"
+          }`}
+        >
+          {!isWideView && (
+            <aside className="min-w-0">
+              <StockSidebarFilters type="in" />
+            </aside>
+          )}
+
+          <div className="min-w-0 flex flex-col overflow-hidden border border-gray-300 bg-white shadow-sm rounded-xl">
+            <StockInListToolbar
+              searchKeyword={searchKeyword}
+              onSearchChange={handleSearchChange}
+              onCreateClick={handleCreateClick}
+              showFilterButton={isWideView}
+              isWideView={isWideView}
+              onToggleWideView={() => setIsWideView((current) => !current)}
+            />
 
           {(loading || detailLoading || error) && (
             <div className="border-b border-gray-300 bg-white px-4 py-3 text-sm">
@@ -191,7 +205,8 @@ export default function StockInList() {
             onPageSizeChange={handlePageSizeChange}
           />
 
-          <StockInDetailTable receipt={selectedReceipt} />
+            <StockInDetailTable receipt={selectedReceipt} />
+          </div>
         </div>
       </div>
     </div>

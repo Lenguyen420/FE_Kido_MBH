@@ -111,7 +111,7 @@ export default function StockTransferListTable({
 
       {/* Desktop view */}
       <div className="hidden overflow-x-auto lg:block">
-        <table className="w-full min-w-[1660px] border-collapse text-sm">
+        <table className="w-full min-w-[1660px] border-collapse text-sm [&_tbody_td]:!py-2">
           <thead>
             <tr className="bg-gradient-to-r from-indigo-50 to-blue-200">
               {columns.map((column) => (
@@ -155,22 +155,38 @@ export default function StockTransferListTable({
                     <td className="px-4 py-3">
                       <button
                         type="button"
-                        className="font-medium text-indigo-600 hover:text-indigo-700 hover:underline text-left"
+                        title={transfer.code || transfer.voucherNo || transfer.id}
+                        className="block max-w-[150px] truncate text-left font-medium text-indigo-600 hover:text-indigo-700 hover:underline"
                       >
                         {transfer.code || transfer.voucherNo || transfer.id}
                       </button>
                     </td>
-                    <td className="px-4 py-3 leading-5 text-gray-800">
-                      {getDescription(transfer)}
+                    <td className="px-4 py-3 text-gray-800">
+                      <div
+                        className="max-w-[520px] truncate"
+                        title={getDescription(transfer)}
+                      >
+                        {getDescription(transfer)}
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-right font-semibold text-gray-900 tabular-nums">
                       {formatNumber(transfer.totalAmount)}
                     </td>
                     <td className="px-4 py-3 text-gray-700">
-                      {getCarrier(transfer)}
+                      <div
+                        className="max-w-[155px] truncate"
+                        title={getCarrier(transfer)}
+                      >
+                        {getCarrier(transfer)}
+                      </div>
                     </td>
-                    <td className="px-4 py-3 leading-5 text-gray-700">
-                      {transfer.documentType || "Chuyển kho nội bộ"}
+                    <td className="px-4 py-3 text-gray-700">
+                      <div
+                        className="max-w-[250px] truncate"
+                        title={transfer.documentType || "Chuyển kho nội bộ"}
+                      >
+                        {transfer.documentType || "Chuyển kho nội bộ"}
+                      </div>
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-center">

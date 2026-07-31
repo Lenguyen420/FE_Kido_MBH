@@ -8,23 +8,22 @@ import {
   Plus,
   RefreshCw,
   FileSpreadsheet,
+  Maximize2,
+  Minimize2,
   Printer,
   ChevronDown,
-  Landmark,
-  X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
-import DateFilterDropdown from "./DateFilterDropdown";
 export default function CashToolbar({
   onAddPaymentVoucher,
   onAddReceiptVoucher,
-  onAddInternalTransfer,
   filters,
   setFilters,
   onRefresh,
+  filterControl,
+  isWideView = false,
+  onToggleWideView,
 }) {
-  const navigate = useNavigate();
   const [openMenu, setOpenMenu] =
 
   
@@ -61,6 +60,19 @@ const [menuPosition, setMenuPosition] =
     top: 0,
     left: 0,
   });
+
+const handleToggleMenu = () => {
+  if (!openMenu && buttonRef.current) {
+    const rect = buttonRef.current.getBoundingClientRect();
+
+    setMenuPosition({
+      top: rect.bottom + 6,
+      left: rect.right - 200,
+    });
+  }
+
+  setOpenMenu((current) => !current);
+};
  
   return (
     <div className="bg-white border-b border-gray-300">
@@ -68,6 +80,8 @@ const [menuPosition, setMenuPosition] =
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           {/* Filter */}
           <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+            {filterControl}
+
             <div className="relative flex-1">
               <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
 
@@ -83,25 +97,6 @@ const [menuPosition, setMenuPosition] =
                 }
               />
             </div>
- 
-
-            <div className="flex flex-col sm:flex-row gap-2">
-              <DateFilterDropdown
-                onApply={(range) => {
-                  const formatDateStr = (d) => {
-                    const year = d.getFullYear();
-                    const month = String(d.getMonth() + 1).padStart(2, "0");
-                    const day = String(d.getDate()).padStart(2, "0");
-                    return `${year}-${month}-${day}`;
-                  };
-                  setFilters?.((prev) => ({
-                    ...prev,
-                    from: formatDateStr(range.from),
-                    to: formatDateStr(range.to),
-                  }));
-                }}
-              />
-            </div>
           </div>
 
           {/* Actions */}
@@ -113,6 +108,15 @@ const [menuPosition, setMenuPosition] =
               <RefreshCw size={17} className="text-gray-600" />
             </button>
 
+            <button
+              type="button"
+              onClick={onToggleWideView}
+              className="min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition"
+              title={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
+            >
+              {isWideView ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+            </button>
+
             <button className="min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition">
               <FileSpreadsheet size={17} className="text-green-600" />
             </button>
@@ -122,8 +126,13 @@ const [menuPosition, setMenuPosition] =
             </button>
 
             <div className="relative flex-shrink-0">
-  <div className="flex overflow-hidden rounded-xl border border-indigo-600 shadow-sm">
+  <div
+    ref={buttonRef}
+    className="flex overflow-hidden rounded-xl border border-indigo-600 shadow-sm"
+  >
     <button
+      type="button"
+      onClick={handleToggleMenu}
       className="h-10 px-4 bg-indigo-600 text-white font-medium flex items-center gap-2 hover:bg-indigo-700 transition whitespace-nowrap"
     >
       <Plus size={18} />
@@ -131,23 +140,8 @@ const [menuPosition, setMenuPosition] =
     </button>
 
     <button
-      ref={buttonRef}
-      onClick={() => {
-        if (
-          !openMenu &&
-          buttonRef.current
-        ) {
-          const rect =
-            buttonRef.current.getBoundingClientRect();
-
-          setMenuPosition({
-            top: rect.bottom + 6,
-            left: rect.right - 200,
-          });
-        }
-
-        setOpenMenu(!openMenu);
-      }}
+      type="button"
+      onClick={handleToggleMenu}
       className="w-10 h-10 bg-indigo-600 border-l border-indigo-500 text-white flex items-center justify-center hover:bg-indigo-700 transition"
     >
       <ChevronDown
@@ -189,41 +183,10 @@ const [menuPosition, setMenuPosition] =
   Thêm phiếu chi
 </button>
 
-        <button
-  onClick={onAddInternalTransfer}
-  className="w-full px-4 py-3 text-left text-sm hover:bg-gray-100"
->
-  Chuyển tiền nội bộ
-</button>
       </div>,
       document.body
     )}
 </div>
-          </div>
-        </div>
-
-        {/* Banner */}
-        <div className="mt-3">
-          <div className="rounded-xl border border-gray-300 bg-gradient-to-r from-blue-50 to-indigo-50 p-3">
-            <div className="flex items-start gap-3 justify-between">
-              <div className="flex gap-2">
-                <Landmark size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
-
-                <div className="text-sm">
-                  <span className="text-gray-700">
-                    Kết nối ngân hàng để tự động lập phiếu thu, phiếu chi từ biến động số dư.
-                  </span>
-
-                  <button className="ml-1 font-semibold text-indigo-600 hover:text-indigo-700">
-                    Kết nối ngay →
-                  </button>
-                </div>
-              </div>
-
-              <button className="text-gray-400 hover:text-gray-600 flex-shrink-0">
-                <X size={16} />
-              </button>
-            </div>
           </div>
         </div>
       </div>

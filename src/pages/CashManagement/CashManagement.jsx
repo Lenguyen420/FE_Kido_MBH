@@ -3,10 +3,11 @@ import React, { useState } from "react";
 import CashHeader from "../../components/CashManagement/CashHeader";
 import CashToolbar from "../../components/CashManagement/CashToolbar";
 import CashTable from "../../components/CashManagement/CashTable";
+import CashSidebarFilters from "../../components/CashManagement/CashSidebarFilters";
+import ToolbarFilterDropdown from "../../components/layout/ToolbarFilterDropdown";
 
 import PaymentVoucher from "./PaymentVoucher";
 import ReceiptVoucher from "./ReceiptVoucher";
-import InternalTransfer from "./InternalTransfer";
 
 export default function CashManagement() {
   const [screen, setScreen] = useState("cash");
@@ -27,6 +28,7 @@ export default function CashManagement() {
   });
 
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isWideView, setIsWideView] = useState(false);
 
   const handleRefresh = () => {
     setRefreshTrigger((prev) => prev + 1);
@@ -52,42 +54,56 @@ export default function CashManagement() {
     );
   }
 
-  if (screen === "internalTransfer") {
-    return (
-      <InternalTransfer
-        onBack={() =>
-          setScreen("cash")
-        }
-      />
-    );
-  }
-
   return (
-    <div className="min-h-screen bg-gray-100 py-3 md:py-4">
-      <div className="mx-auto max-w-[1800px] px-3 sm:px-4 lg:px-5">
+    <div className="min-h-screen bg-[#f3f5f7]">
+      <div
+        className={`mx-auto w-full px-3 py-4 sm:px-4 lg:px-5 ${
+          isWideView ? "max-w-none" : "max-w-[1600px]"
+        }`}
+      >
         <CashHeader
           onRefresh={handleRefresh}
         />
 
-        <CashToolbar
-          filters={filters}
-          setFilters={setFilters}
-          onRefresh={handleRefresh}
-          onAddPaymentVoucher={() =>
-            setScreen("paymentVoucher")
-          }
-          onAddReceiptVoucher={() =>
-            setScreen("receiptVoucher")
-          }
-          onAddInternalTransfer={() =>
-            setScreen("internalTransfer")
-          }
-        />
+        <div
+          className={`grid grid-cols-1 gap-4 ${
+            isWideView ? "" : "xl:grid-cols-[320px_minmax(0,1fr)]"
+          }`}
+        >
+          {!isWideView && (
+            <aside className="min-w-0">
+              <CashSidebarFilters filters={filters} setFilters={setFilters} />
+            </aside>
+          )}
 
-        <CashTable
-          filters={filters}
-          refreshTrigger={refreshTrigger}
-        />
+          <main className="min-w-0">
+            <CashToolbar
+              filters={filters}
+              setFilters={setFilters}
+              onRefresh={handleRefresh}
+              onAddPaymentVoucher={() =>
+                setScreen("paymentVoucher")
+              }
+              onAddReceiptVoucher={() =>
+                setScreen("receiptVoucher")
+              }
+              isWideView={isWideView}
+              onToggleWideView={() => setIsWideView((current) => !current)}
+              filterControl={
+                isWideView ? (
+                  <ToolbarFilterDropdown panelClassName="sm:w-[420px]">
+                    <CashSidebarFilters filters={filters} setFilters={setFilters} />
+                  </ToolbarFilterDropdown>
+                ) : null
+              }
+            />
+
+            <CashTable
+              filters={filters}
+              refreshTrigger={refreshTrigger}
+            />
+          </main>
+        </div>
       </div>
     </div>
   );

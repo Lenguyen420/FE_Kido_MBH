@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   ChevronDown,
   FileSpreadsheet,
+  Maximize2,
+  Minimize2,
   Plus,
   RefreshCcw,
   Search,
@@ -20,7 +22,13 @@ const defaultFilterValues = {
   toDate: "22/06/2026",
 };
 
-export default function StockOutToolbar({ searchKeyword, onSearchChange }) {
+export default function StockOutToolbar({
+  searchKeyword,
+  onSearchChange,
+  showFilterButton = false,
+  isWideView = false,
+  onToggleWideView,
+}) {
   const navigate = useNavigate();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [filterValues, setFilterValues] = useState(defaultFilterValues);
@@ -38,15 +46,7 @@ export default function StockOutToolbar({ searchKeyword, onSearchChange }) {
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           {/* Filters & Actions */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
-            <button
-              type="button"
-              className="h-10 px-4 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2"
-            >
-              <span className="truncate">Thực hiện hàng loạt</span>
-              <ChevronDown size={15} className="shrink-0" />
-            </button>
-
-            <div className="relative">
+            {showFilterButton && <div className="relative">
               <button
                 type="button"
                 onClick={() => setIsFilterOpen((current) => !current)}
@@ -70,7 +70,7 @@ export default function StockOutToolbar({ searchKeyword, onSearchChange }) {
                   onApply={() => setIsFilterOpen(false)}
                 />
               )}
-            </div>
+            </div>}
 
             {/* Khoảng thời gian lọc chứng từ xuất kho đang xem. */}
             <span className="text-sm font-medium text-gray-600 sm:px-3 text-center sm:text-left">
@@ -93,6 +93,15 @@ export default function StockOutToolbar({ searchKeyword, onSearchChange }) {
             <div className="flex items-center justify-center gap-2">
               <button type="button" className={iconButtonClass} title="Tải lại">
                 <RefreshCcw size={17} className="text-gray-600" />
+              </button>
+
+              <button
+                type="button"
+                onClick={onToggleWideView}
+                className={iconButtonClass}
+                title={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
+              >
+                {isWideView ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
               </button>
 
               <button type="button" className={iconButtonClass} title="Xuất Excel">

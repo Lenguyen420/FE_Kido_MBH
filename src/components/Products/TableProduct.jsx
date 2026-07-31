@@ -1,5 +1,20 @@
-import React, { useState, useEffect, useRef } from "react";
-import { ChevronLeft, ChevronRight, Edit2, Save, Trash2, X, Image } from "lucide-react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Edit2,
+  FileSpreadsheet,
+  Image,
+  Maximize2,
+  Minimize2,
+  Package,
+  Plus,
+  RefreshCcw,
+  Save,
+  Search,
+  Trash2,
+  X,
+} from "lucide-react";
 import AddProductModal from "./AddProductModal";
 import toast from "react-hot-toast";
 import { productApi } from "../../api";
@@ -82,22 +97,21 @@ function EditableCell({ value, onSave, type = "text", align = "left" }) {
   );
 }
 
-export default function TableProduct({ filters = { search: "", categoryId: null, stockStatus: "all", displayStatus: "active" } }) {
+export default function TableProduct({
+  filters = { search: "", categoryId: null, stockStatus: "all", displayStatus: "active" },
+  setFilters,
+  filterControl,
+  isWideView = false,
+  onToggleWideView,
+}) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalItems, setTotalItems] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
-  const ITEMS_PER_PAGE = 22;
+  const ITEMS_PER_PAGE = 10;
 
-  useEffect(() => {
-    fetchProducts();
-  }, [filters, currentPage]);
-
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [filters]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
       const payload = {
@@ -108,6 +122,7 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
       const responseData = await productApi.getAll(payload);
       const items = responseData.items || [];
       const totalPagesServer = responseData.totalPages || 1;
+      setTotalItems(Number(responseData.total) || items.length);
 
       // Map BE fields to FE format
       const mappedData = items.map(p => {
@@ -138,12 +153,21 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
       });
       setProducts(mappedData);
       setTotalPages(totalPagesServer);
-    } catch (error) {
+    } catch {
       toast.error("Không thể tải danh sách sản phẩm");
+      setTotalItems(0);
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, filters]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters]);
 
   const currentData = products;
 
@@ -153,7 +177,7 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
       await productApi.update(productId, updateData);
       toast.success("Cập nhật thành công");
       fetchProducts();
-    } catch (error) {
+    } catch {
       toast.error("Không thể cập nhật");
     }
   };
@@ -165,7 +189,7 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
       await productApi.delete(product.id);
       toast.success("Xoa san pham thanh cong");
       fetchProducts();
-    } catch (error) {
+    } catch {
       toast.error("Khong the xoa san pham");
     }
   };
@@ -180,34 +204,98 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
 
   const [openAddModal, setOpenAddModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-
   return (
-    <div>
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-semibold">Hàng hóa</h1>
+    <div className="space-y-4">
+      {isWideView && (
+        <h1 className="text-2xl font-bold text-gray-800 lg:text-3xl">
+          Danh mục hàng hóa
+        </h1>
+      )}
 
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              setSelectedProduct(null);
-              setOpenAddModal(true);
-            }}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer  "
-          >
-            + Thêm mới
-          </button>
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer">
-            Import
-          </button>
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 cursor-pointer">
-            Xuất file
-          </button>
+      <div>
+        <div className="rounded-xl border border-gray-300 bg-white p-5 shadow-sm">
+          <div className="flex items-center gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-violet-100 to-violet-200">
+              <Package size={28} className="text-violet-600" />
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">Tổng số hàng hóa</p>
+              <p className="mt-1 text-2xl font-bold text-gray-800">
+                {totalItems.toLocaleString("vi-VN")} sản phẩm
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* TABLE */}
-      <div className="bg-white rounded-xl shadow overflow-hidden">
+      <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-gray-300 p-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            {filterControl}
+
+            <div className="relative min-w-0 md:w-[420px]">
+              <Search
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <input
+                value={filters.search || ""}
+                onChange={(event) =>
+                  setFilters?.((current) => ({
+                    ...current,
+                    search: event.target.value,
+                  }))
+                }
+                placeholder="Tìm kiếm mã, tên hàng..."
+                className="h-10 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={fetchProducts}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-600 transition hover:bg-gray-50"
+              title="Làm mới"
+              aria-label="Làm mới"
+            >
+              <RefreshCcw size={17} />
+            </button>
+
+            <button
+              type="button"
+              onClick={onToggleWideView}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-600 transition hover:bg-gray-50"
+              title={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
+              aria-label={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
+            >
+              {isWideView ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+            </button>
+
+            <button
+              type="button"
+              className="flex h-10 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 text-sm font-medium text-emerald-600 transition hover:bg-gray-50"
+            >
+              <FileSpreadsheet size={17} />
+              Xuất file
+            </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedProduct(null);
+              setOpenAddModal(true);
+            }}
+            className="flex h-10 items-center gap-2 rounded-lg bg-indigo-600 px-5 font-medium text-white shadow-sm transition hover:bg-indigo-700"
+          >
+            <Plus size={18} />
+            Thêm mới
+          </button>
+        </div>
+      </div>
+
         <div className="max-h-[900px] overflow-y-auto">
           <table className="w-full text-sm">
             
@@ -390,7 +478,7 @@ export default function TableProduct({ filters = { search: "", categoryId: null,
               setSelectedProduct(null);
             }
             return true;
-          } catch (error) {
+          } catch {
             toast.error(isEdit ? "Không thể cập nhật sản phẩm" : "Không thể tạo sản phẩm");
           }
         }}

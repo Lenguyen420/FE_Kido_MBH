@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   RotateCcw,
   Printer,
@@ -52,13 +52,9 @@ export default function ReportContent({
     fetchBranches();
   }, []);
 
-  // Fetch end of day report
-  useEffect(() => {
+  const fetchReport = useCallback(async () => {
     if (!selectedBranch?.id) return;
-    fetchReport();
-  }, [dateType, fromDate, toDate, selectedBranch?.id]);
 
-  const fetchReport = async () => {
     setLoading(true);
     try {
       const effectiveFromDate = fromDate || new Date().toISOString().split("T")[0];
@@ -83,7 +79,11 @@ export default function ReportContent({
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateType, fromDate, selectedBranch?.id, toDate]);
+
+  useEffect(() => {
+    fetchReport();
+  }, [fetchReport]);
 
   const data = reportData;
 
@@ -138,15 +138,15 @@ return (
     </div>
 
     {/* PREVIEW */}
-    <div className="h-[75vh] overflow-x-auto overflow-y-auto p-2 sm:p-5 flex justify-start lg:justify-center bg-gray-200">
+    <div className="h-[75vh] overflow-x-auto overflow-y-auto bg-gray-200 p-2 sm:p-5">
 
       <div
         ref={previewRef}
         style={{
           transform: window.innerWidth < 768 ? "scale(1)" : `scale(${zoom})`,
-          transformOrigin: "top center",
+          transformOrigin: "top left",
         }}
-        className={`min-w-max transition-all duration-300 ${isPortrait ? "w-[210mm] min-h-[297mm]" : "w-[297mm] min-h-[210mm]"} shadow-xl border bg-white`}
+        className="min-h-[900px] w-[1700px] min-w-[1700px] border bg-white shadow-xl transition-all duration-300"
       >
 
         {/* HEADER */}

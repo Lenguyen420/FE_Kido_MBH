@@ -2,13 +2,19 @@ import axiosInstance from "./axiosConfig";
 
 export const supplierApi = {
   // Get all suppliers with optional filters
-  getAll: async (status, search) => {
+  getAll: async (status, search, page, size) => {
     const params = {};
     if (status && status !== "all") {
       params.status = status;
     }
     if (search) {
       params.search = search;
+    }
+    if (page) {
+      params.page = page;
+    }
+    if (size) {
+      params.size = size;
     }
     const response = await axiosInstance.get("/suppliers", { params });
     return response.data.data || response.data;

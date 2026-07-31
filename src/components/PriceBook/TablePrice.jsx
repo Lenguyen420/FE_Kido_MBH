@@ -1,24 +1,34 @@
-import React, { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  FileSpreadsheet,
+  Maximize2,
+  Minimize2,
+  RefreshCcw,
+  Save,
+  Search,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { productApi } from "../../api";
 
-export default function PriceTable() {
+export default function PriceTable({
+  filterControl,
+  isWideView = false,
+  onToggleWideView,
+}) {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editedPrices, setEditedPrices] = useState({});
+  const [searchKeyword, setSearchKeyword] = useState("");
   const ITEMS_PER_PAGE = 22;
   const [currentPage, setCurrentPage] = useState(1);
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await productApi.getAll();
+      const data = await productApi.getAll({ page: 1, size: 1000 });
       // Map BE fields to FE format
       const mappedData = data.map(p => ({
         id: p.id,
@@ -28,18 +38,29 @@ export default function PriceTable() {
         cost: parseFloat(p.costPrice),
       }));
       setProducts(mappedData);
-    } catch (error) {
+    } catch {
       toast.error("Không thể tải danh sách sản phẩm");
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
+  const filteredProducts = useMemo(() => {
+    const keyword = searchKeyword.trim().toLowerCase();
+    if (!keyword) return products;
+
+    return products.filter((product) =>
+      `${product.code || ""} ${product.name || ""}`.toLowerCase().includes(keyword)
+    );
+  }, [products, searchKeyword]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE));
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const currentData = products.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-
+  const currentData = filteredProducts.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   const handlePrev = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
@@ -69,7 +90,7 @@ export default function PriceTable() {
       toast.success(`Cập nhật ${items.length} sản phẩm thành công`);
       setEditedPrices({});
       fetchProducts();
-    } catch (error) {
+    } catch {
       toast.error("Không thể cập nhật giá");
     } finally {
       setSaving(false);
@@ -77,28 +98,75 @@ export default function PriceTable() {
   };
 
   return (
-    <div className="flex-1">
+    <div className="space-y-4">
+      {isWideView && (
+        <h1 className="text-2xl font-bold text-gray-800 lg:text-3xl">
+          Thiết lập giá
+        </h1>
+      )}
 
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-xl font-semibold">Bảng giá chung</h1>
+      <div className="overflow-hidden rounded-xl border border-gray-300 bg-white shadow-sm">
+        <div className="flex flex-col gap-3 border-b border-gray-300 p-4 xl:flex-row xl:items-center xl:justify-between">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            {filterControl}
 
-        <div className="flex gap-2">
-          <button
-            onClick={handleSaveAll}
-            disabled={saving || Object.keys(editedPrices).length === 0}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {saving ? "Đang lưu..." : "Lưu thay đổi"}
-          </button>
-          <button className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-            Xuất file
-          </button>
+            <div className="relative min-w-0 md:w-[420px]">
+              <Search
+                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+              />
+              <input
+                value={searchKeyword}
+                onChange={(event) => {
+                  setSearchKeyword(event.target.value);
+                  setCurrentPage(1);
+                }}
+                placeholder="Tìm kiếm mã, tên hàng..."
+                className="h-10 w-full rounded-lg border border-gray-300 bg-white pl-10 pr-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={fetchProducts}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-600 transition hover:bg-gray-50"
+              title="Làm mới"
+              aria-label="Làm mới"
+            >
+              <RefreshCcw size={17} />
+            </button>
+
+            <button
+              type="button"
+              onClick={onToggleWideView}
+              className="flex h-10 w-10 items-center justify-center rounded-lg border border-gray-300 bg-white text-gray-600 transition hover:bg-gray-50"
+              title={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
+              aria-label={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
+            >
+              {isWideView ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+            </button>
+
+            <button
+              type="button"
+              className="flex h-10 items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 text-sm font-medium text-emerald-600 transition hover:bg-gray-50"
+            >
+              <FileSpreadsheet size={17} />
+              Xuất file
+            </button>
+
+            <button
+              type="button"
+              onClick={handleSaveAll}
+              disabled={saving || Object.keys(editedPrices).length === 0}
+              className="flex h-10 items-center gap-2 rounded-lg bg-indigo-600 px-5 font-medium text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Save size={17} />
+              {saving ? "Đang lưu..." : "Lưu thay đổi"}
+            </button>
+          </div>
         </div>
-      </div>
-
-      {/* TABLE */}
-      <div className="bg-white rounded-xl shadow overflow-hidden">
 
         <div className="max-h-[800px] overflow-y-auto">
           <table className="w-full text-sm">
@@ -130,7 +198,7 @@ export default function PriceTable() {
                 </tr>
               ) : (
                 currentData.map((item, index) => (
-                <tr key={index} className="border-t border-gray-300 hover:bg-gray-50">
+                <tr key={item.id || index} className="border-t border-gray-300 hover:bg-gray-50">
                   <td className="p-4">{item.code}</td>
                   <td className="p-4">{item.name}</td>
                   <td className="p-4 text-center">{item.cost}</td>
@@ -139,7 +207,7 @@ export default function PriceTable() {
                   <td className="p-4 text-center">
                     <input
                       type="number"
-                      defaultValue={item.price}
+                      value={editedPrices[item.id] ?? item.price}
                       onChange={(e) => handlePriceChange(item.id, e.target.value)}
                       className={`border rounded-lg px-3 py-1 w-24 text-right ${editedPrices[item.id] !== undefined ? 'border-blue-500 bg-blue-50' : ''}`}
                     />
@@ -151,30 +219,29 @@ export default function PriceTable() {
 
           </table>
         </div>
-      </div>
 
-      {/* PAGINATION */}
-      <div className="flex justify-between items-center p-4 border-t">
-        <span className="text-sm text-gray-600">
-          Trang {currentPage} / {totalPages}
-        </span>
+        <div className="flex items-center justify-between border-t border-gray-300 p-4">
+          <span className="text-sm text-gray-600">
+            Trang {currentPage} / {totalPages}
+          </span>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handlePrev}
-            disabled={currentPage === 1}
-            className="cursor-pointer p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
-          >
-            <ChevronLeft size={18} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handlePrev}
+              disabled={currentPage === 1}
+              className="cursor-pointer rounded-lg border border-gray-300 p-2 hover:bg-gray-100 disabled:opacity-50"
+            >
+              <ChevronLeft size={18} />
+            </button>
 
-          <button
-            onClick={handleNext}
-            disabled={currentPage === totalPages}
-            className="cursor-pointer p-2 rounded-lg border border-gray-300 hover:bg-gray-100 disabled:opacity-50"
-          >
-            <ChevronRight size={18} />
-          </button>
+            <button
+              onClick={handleNext}
+              disabled={currentPage === totalPages}
+              className="cursor-pointer rounded-lg border border-gray-300 p-2 hover:bg-gray-100 disabled:opacity-50"
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

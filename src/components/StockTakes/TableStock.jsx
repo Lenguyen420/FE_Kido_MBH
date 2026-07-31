@@ -1,5 +1,14 @@
-import React, { useState, useMemo, useEffect } from "react";
-import { ChevronDown, RefreshCcw, FileSpreadsheet, Plus, Search, Settings } from "lucide-react";
+import React, { useMemo, useState } from "react";
+import {
+  ChevronDown,
+  FileSpreadsheet,
+  Maximize2,
+  Minimize2,
+  Plus,
+  RefreshCcw,
+  Search,
+  Settings,
+} from "lucide-react";
 import StockTakeModal from "./StockTakeModal";
 import SidebarFilterStock from "./SidebarFilterStock";
 import StockInPagination from "../StockIn/StockInPagination";
@@ -44,7 +53,15 @@ const detailColumns = [
   { label: "Giá trị chênh lệch", className: "min-w-[150px] text-right" },
 ];
 
-export default function TableStock({ rows = [], loading, error, onRefresh }) {
+export default function TableStock({
+  rows = [],
+  loading,
+  error,
+  onRefresh,
+  showFilterButton = false,
+  isWideView = false,
+  onToggleWideView,
+}) {
   const [openStockTake, setOpenStockTake] = useState(false);
   const [searchKeyword, setSearchKeyword] = useState("");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -60,13 +77,6 @@ export default function TableStock({ rows = [], loading, error, onRefresh }) {
 
   const iconButtonClass =
     "min-w-10 w-10 h-10 rounded-xl border border-gray-300 bg-white flex items-center justify-center hover:bg-gray-50 transition";
-
-  // Reset selected row and pagination when rows change
-  useEffect(() => {
-    if (rows.length > 0 && !selectedRowId) {
-      setSelectedRowId(rows[0].id);
-    }
-  }, [rows, selectedRowId]);
 
   // Handle Search input change
   const handleSearchChange = (event) => {
@@ -102,6 +112,7 @@ export default function TableStock({ rows = [], loading, error, onRefresh }) {
     const found = filteredRows.find((r) => r.id === selectedRowId);
     return found || filteredRows[0] || null;
   }, [filteredRows, selectedRowId]);
+  const activeSelectedRowId = selectedRow?.id || null;
 
   const handlePageSizeChange = (value) => {
     setPageSize(value);
@@ -122,7 +133,7 @@ export default function TableStock({ rows = [], loading, error, onRefresh }) {
   }, [filteredRows]);
 
   // Detail table data
-  const details = selectedRow?.items || [];
+  const details = useMemo(() => selectedRow?.items || [], [selectedRow]);
   const detailTotal = details.length;
   const detailTotalPages = Math.max(1, Math.ceil(detailTotal / detailPageSize));
   const safeDetailCurrentPage = Math.min(detailCurrentPage, detailTotalPages);
@@ -146,15 +157,7 @@ export default function TableStock({ rows = [], loading, error, onRefresh }) {
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             {/* Filters */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full lg:w-auto">
-              <button
-                type="button"
-                className="h-10 px-4 rounded-xl border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 transition flex items-center justify-center gap-2"
-              >
-                <span className="truncate">Thực hiện hàng loạt</span>
-                <ChevronDown size={15} className="shrink-0" />
-              </button>
-
-              <div className="relative">
+              {showFilterButton && <div className="relative">
                 <button
                   type="button"
                   onClick={() => setIsFilterOpen((current) => !current)}
@@ -183,7 +186,7 @@ export default function TableStock({ rows = [], loading, error, onRefresh }) {
                     </div>
                   </div>
                 )}
-              </div>
+              </div>}
 
               <span className="text-sm font-medium text-gray-600 sm:px-3 text-center sm:text-left">
                 Tháng này
@@ -213,6 +216,15 @@ export default function TableStock({ rows = [], loading, error, onRefresh }) {
                     <RefreshCcw size={17} className="text-gray-600" />
                   </button>
                 )}
+
+                <button
+                  type="button"
+                  onClick={onToggleWideView}
+                  className={iconButtonClass}
+                  title={isWideView ? "Thu gọn, hiện bộ lọc bên trái" : "Xem rộng"}
+                >
+                  {isWideView ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+                </button>
 
                 <button
                   type="button"
@@ -262,7 +274,7 @@ export default function TableStock({ rows = [], loading, error, onRefresh }) {
                   key={idx}
                   className={`px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-indigo-900 border-b border-indigo-200 ${col.className || ""}`}
                 >
-                  {col.label || <input type="checkbox" checked={paginatedRows.length > 0 && paginatedRows.every(r => r.id === selectedRowId)} readOnly />}
+                  {col.label || <input type="checkbox" checked={paginatedRows.length > 0 && paginatedRows.every(r => r.id === activeSelectedRowId)} readOnly />}
                 </th>
               ))}
             </tr>
@@ -285,7 +297,7 @@ export default function TableStock({ rows = [], loading, error, onRefresh }) {
             {!loading &&
               !error &&
               paginatedRows.map((item) => {
-                const isSelected = item.id === selectedRowId;
+                const isSelected = item.id === activeSelectedRowId;
                 return (
                   <tr
                     key={item.id}

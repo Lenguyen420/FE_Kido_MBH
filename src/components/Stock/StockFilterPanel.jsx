@@ -80,18 +80,32 @@ const parseDate = (value) => {
   return date;
 };
 
-function DateBox({ label, value, onChange, align = "left" }) {
+function DateBox({
+  label,
+  value,
+  onChange,
+  align = "left",
+  sidebar = false,
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const selectedDate = parseDate(value);
 
   return (
     <div className="relative min-w-0">
-      <label className="mb-1 block text-xs font-bold text-slate-900">
+      <label
+        className={
+          sidebar
+            ? "mb-2 block font-medium text-slate-900"
+            : "mb-1 block text-xs font-bold text-slate-900"
+        }
+      >
         {label}
       </label>
 
       <div
-        className={`flex h-7 w-full items-center border bg-white px-2 ${
+        className={`flex w-full items-center border bg-white ${
+          sidebar ? "h-10 rounded-lg px-3" : "h-7 px-2"
+        } ${
           isOpen ? "border-cyan-600" : "border-slate-300"
         }`}
       >
@@ -157,6 +171,7 @@ export default function StockFilterPanel({
   onChange,
   onReset,
   onApply,
+  embedded = false,
 }) {
   const isStockOut = type === "out";
   const isStockTransfer = type === "transfer";
@@ -181,6 +196,89 @@ export default function StockFilterPanel({
     ? salesDocumentStatusOptions
     : paymentStatusOptions;
 
+  if (embedded) {
+    return (
+      <div className="w-full space-y-4">
+        <div className="rounded-xl bg-white p-4 shadow">
+          <StockFilterSelect
+            label="Trạng thái ghi sổ"
+            value={values.postingStatus}
+            options={postingStatusOptions}
+            onChange={(value) => onChange("postingStatus", value)}
+            sidebar
+          />
+        </div>
+
+        <div className="space-y-4 rounded-xl bg-white p-4 shadow">
+          <StockFilterSelect
+            label={typeLabel}
+            value={values.documentType}
+            options={typeOptions}
+            onChange={(value) => onChange("documentType", value)}
+            sidebar
+          />
+
+          <StockFilterSelect
+            label={statusLabel}
+            value={values.secondaryStatus}
+            options={statusOptions}
+            onChange={(value) => onChange("secondaryStatus", value)}
+            sidebar
+          />
+        </div>
+
+        <div className="space-y-4 rounded-xl bg-white p-4 shadow">
+          <StockFilterSelect
+            label="Kỳ báo cáo"
+            value={values.reportPeriod}
+            options={reportPeriodOptions}
+            onChange={(value) => onChange("reportPeriod", value)}
+            sidebar
+          />
+
+          <DateBox
+            label="Từ ngày"
+            value={values.fromDate}
+            onChange={(value) => onChange("fromDate", value)}
+            sidebar
+          />
+
+          <DateBox
+            label="Đến ngày"
+            value={values.toDate}
+            onChange={(value) => onChange("toDate", value)}
+            sidebar
+          />
+
+          <button
+            type="button"
+            className="text-sm font-medium text-sky-700 hover:underline"
+          >
+            Lọc nâng cao
+          </button>
+
+          <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+            <button
+              type="button"
+              onClick={onReset}
+              className="h-9 rounded-lg border border-gray-300 bg-white px-4 text-sm font-semibold text-gray-700 transition hover:bg-gray-50"
+            >
+              Đặt lại
+            </button>
+
+            <button
+              type="button"
+              onClick={onApply}
+              className="h-9 rounded-lg bg-indigo-600 px-5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+            >
+              Lọc
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="absolute left-0 top-[calc(100%+4px)] z-[60] w-[calc(100vw-1.5rem)] border border-slate-300 bg-white p-4 shadow-xl sm:w-[560px]">
       <div className="grid gap-3">
@@ -191,7 +289,7 @@ export default function StockFilterPanel({
           onChange={(value) => onChange("postingStatus", value)}
         />
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className={`grid gap-3 ${embedded ? "" : "sm:grid-cols-2"}`}>
           <StockFilterSelect
             label={typeLabel}
             value={values.documentType}
@@ -207,7 +305,11 @@ export default function StockFilterPanel({
           />
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-[1fr_128px_128px]">
+        <div
+          className={`grid gap-3 ${
+            embedded ? "" : "sm:grid-cols-[1fr_128px_128px]"
+          }`}
+        >
           <StockFilterSelect
             label="Kỳ báo cáo"
             value={values.reportPeriod}

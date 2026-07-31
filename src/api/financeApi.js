@@ -43,19 +43,8 @@ export const financeApi = {
     return unwrap(response);
   },
 
-  getTransfers: async () => {
-    const response = await axiosInstance.get("/finance/transfers");
-    return unwrap(response);
-  },
-
   getDetails: async () => {
     const response = await axiosInstance.get("/finance/details");
     return unwrap(response);
   },
-
-  createTransfer: async (data) => {
-    const response = await axiosInstance.post("/finance/transfers", data);
-    return unwrap(response);
-  },
 };
-

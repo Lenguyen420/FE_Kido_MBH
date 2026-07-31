@@ -4,6 +4,7 @@ import TableProduct from "../components/Products/TableProduct.jsx";
 import ToolbarFilterDropdown from "../components/layout/ToolbarFilterDropdown.jsx";
 
 export default function Products() {
+  const [isWideView, setIsWideView] = React.useState(false);
   const [filters, setFilters] = React.useState({
     search: "",
     categoryId: null,
@@ -12,19 +13,42 @@ export default function Products() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      <div className="mx-auto max-w-[1800px] p-4">
-        <div className="mb-4 grid gap-3 border-b border-cyan-200 bg-slate-50 px-3 py-3 sm:grid-cols-[auto_1fr] sm:items-center">
-          <ToolbarFilterDropdown panelClassName="sm:w-[720px]">
+    <div className="min-h-screen bg-[#f3f5f7]">
+      <div
+        className={`mx-auto w-full px-3 py-4 sm:px-4 lg:px-5 ${
+          isWideView ? "max-w-none" : "max-w-[1600px]"
+        }`}
+      >
+        <div
+          className={`grid grid-cols-1 gap-4 ${
+            isWideView ? "" : "xl:grid-cols-[320px_minmax(0,1fr)]"
+          }`}
+        >
+          {!isWideView && (
+            <aside className="min-w-0">
+            <h1 className="mb-4 text-2xl font-bold text-gray-800 lg:text-3xl">
+              Danh mục hàng hóa
+            </h1>
             <SidebarFilter filters={filters} setFilters={setFilters} />
-          </ToolbarFilterDropdown>
+            </aside>
+          )}
 
-          <span className="text-sm font-medium text-slate-700 sm:px-3">
-            Hàng đang kinh doanh
-          </span>
+          <main className="min-w-0">
+            <TableProduct
+              filters={filters}
+              setFilters={setFilters}
+              isWideView={isWideView}
+              onToggleWideView={() => setIsWideView((current) => !current)}
+              filterControl={
+                isWideView ? (
+                  <ToolbarFilterDropdown panelClassName="sm:w-[720px]">
+                    <SidebarFilter filters={filters} setFilters={setFilters} />
+                  </ToolbarFilterDropdown>
+                ) : null
+              }
+            />
+          </main>
         </div>
-
-        <TableProduct filters={filters} />
       </div>
     </div>
   );

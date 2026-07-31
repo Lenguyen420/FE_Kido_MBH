@@ -1,7 +1,7 @@
 import React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-const pageSizeOptions = [20, 50, 100];
+const pageSizeOptions = [5, 10, 20, 50, 100];
 
 export default function StockInPagination({
   total,
